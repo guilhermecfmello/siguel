@@ -1,0 +1,5 @@
+DESENVOLVIDO POR GUILHERME C. F. MELLO
+
+Trabalho de Estrutura de Dados
+
+O objetivo é criar um sistema de informação geográfica simplificado (GIS).
