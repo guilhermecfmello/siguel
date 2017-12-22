@@ -3,6 +3,7 @@
 #include <math.h>
 #include "ConvexHull.h"
 #include "Ordenacao.h"
+#include "Quadra.h"
 
 vectorNode *listToVector(Lista l, getX gx, getY gy){
   int size, i;
@@ -41,14 +42,23 @@ void calculaAngulos(vectorNode *vector, int size){
 
 void iniciaVetor(vectorNode *vector, int size){
   int i, j, indiceMenor;
-  double refY;
+  double refY, refX;
   if(size>0){
     refY = vector[0].y;
+    refX = vector[0].x;
     indiceMenor = 0;
     for(i=0;i<size;i++){
       if(vector[i].y<refY){
         indiceMenor = i;
         refY = vector[i].y;
+        refX = vector[i].x;
+      }
+      else if(vector[i].y==refY){
+        if(vector[i].x<refX){
+          indiceMenor = i;
+          refY = vector[i].y;
+          refX = vector[i].x;
+        }
       }
     }
     swap(vector,indiceMenor,0);
@@ -64,7 +74,7 @@ Pilha transfereToPilha(vectorNode *vector, int size){
   if(size>0){
     p = createPilha();
     for(i=1;i<size;i++){
-      addPilha(p,&vector[i]);
+      push(p,&vector[i]);
     }
   }
   return p;
@@ -77,7 +87,7 @@ vectorNode *stackToVector(Pilha p, int *size){
   *size = getSizePilha(p);
   newVector = malloc(sizeof(vectorNode)*(*size));
   for(i=0;i<(*size);i++){
-    auxP = getPilha(p);
+    auxP = pop(p);
     aux = (vectorNode*) auxP;
     newVector[i].x = aux->x;
     newVector[i].y = aux->y;
@@ -87,28 +97,6 @@ vectorNode *stackToVector(Pilha p, int *size){
   return newVector;
 }
 
-Pilha calculaConvexHull(vectorNode *vector, int size, Pilha ch, Pilha inside){
-  int i;
-  Pilha aux;
-  Posic p, c, n;
-  if(size>2){
-    addPilha(ch,&vector[0]);
-    addPilha(ch,&vector[1]);
-    addPilha(ch,&vector[2]);
-    for(i=3;i<size;i++){
-        p = seeNextTopPilha(ch);
-        c = seeTopPilha(ch);
-        n = &vector[i];
-        while(ccw(p,c,n)>-1){
-          addPilha(inside,getPilha(ch));
-          p = seeNextTopPilha(ch);
-          c = seeTopPilha(ch);
-        }
-        addPilha(ch,&vector[i]);
-      }
-  }
-  return ch;
-}
 
 void arrumaIntervaloAngulosIguais(vectorNode *vector, int i, int j){
   int aux;
@@ -128,20 +116,50 @@ void arrumaAngulosIguais(vectorNode *vector, int size){
   int i, j;
   for(i=0;i<size-1;i++){
     if(vector[i].ang==vector[i+1].ang){
-      j = 0;
-      while(vector[i+j].ang==vector[i+1+j].ang)
+      j = 1;
+      while(vector[i+j].ang==vector[i+j].ang){
+        if(i+j>size-2)
+          break;
         j++;
-      arrumaIntervaloAngulosIguais(vector,i,i+j-1);
+      }
+      arrumaIntervaloAngulosIguais(vector,i,i+j);
+      i = i + j - 1;
     }
   }
 
 }
 
+Pilha calculaConvexHull(vectorNode *vector, int size, Pilha ch, Pilha inside){
+  int i;
+  Pilha aux;
+  Posic p, c;
+  if(size<3)
+    printf("\nEXCESSAOOOOOOOOOOOOOOO");
+  if(size>2){
+    push(ch,&vector[0]);
+    push(ch,&vector[1]);
+    push(ch,&vector[2]);
+    for(i=3;i<size;i++){
+      p = nextTopPilha(ch);
+      c = topPilha(ch);
+      while(ccw(p,c,&vector[i])>0){
+        push(inside,pop(ch));
+        p = nextTopPilha(ch);
+        c = topPilha(ch);
+      }
+      push(ch,&vector[i]);
+    }
+  }
+  return ch;
+}
+
 Pilha convexHull(Lista l, getX gx, getY gy){
-  Pilha inside, ch;
+  Pilha inside, ch, aux;
   int i, size;
   vectorNode *vector;
   size = length(l);
+  if(size<3)
+    return NULL;
   vector = listToVector(l,gx,gy);
   iniciaVetor(vector, size);
   calculaAngulos(vector, size);
@@ -154,18 +172,28 @@ Pilha convexHull(Lista l, getX gx, getY gy){
     vector = stackToVector(inside,&size);
   }while(size>2);
   for(i=0;i<size;i++)
-    addPilha(ch,&vector[i]);
+    push(ch,&vector[i]);
   return ch;
 }
+/*for(i=3;i<size;i++){
+c = topPilha(ch);
+push(inside,pop(ch));
+while(ccw(topPilha(ch),c,&vector[i])!=-1){
+c = topPilha(ch);
+push(inside,pop(ch));
+if(topPilha(ch)==NULL)
+printf("\nvector[i].x: %f vector[i].y: %f", vector[i].x, vector[i].y);
+}
+push(ch,c);
+push(ch,&vector[i]);
+}
+*/
 
 
 double ccw(vectorNode *v1, vectorNode *v2, vectorNode *v3){
-  double aux1, aux2;
-  aux1 = (v2->x - v1->x)*(v3->y-v1->y);
-  aux2 = (v2->y - v1->y)*(v3->x - v1->x);
-  aux1 = aux1 - aux2;
+  double aux1;
+  aux1 = (v2->x - v1->x)*(v3->y-v1->y) - (v2->y - v1->y)*(v3->x - v1->x);
   if(aux1>0) return -1;
   else if(aux1<0) return 1;
   else return 0;
-  return aux1 - aux2;
 }

@@ -6,6 +6,7 @@
 typedef struct _semaforo{
   double x;
   double y;
+  double tempo;
   char *id;
 }semaforo;
 
@@ -15,6 +16,7 @@ Semaforo createSemaforo(double x, double y, char *id){
   semaforo *s = (semaforo*)malloc(sizeof(semaforo));
   s->x = x;
   s->y = y;
+  s->tempo = 0;
   size = strlen(id);
   newId = malloc(sizeof(char)*(size+1));
   strcpy(newId,id);
@@ -47,4 +49,12 @@ void getSemaforoInfos(Semaforo sem, double *x, double *y, char **id){
 void apagaSemaforoID(Semaforo sem){
   semaforo *s = (semaforo*) sem;
   free(s->id);
+}
+
+void setSemaforoTempo(Semaforo sem, double tempo){
+  semaforo *s;
+  if(sem!=NULL){
+    s = (semaforo*) sem;
+    s->tempo = tempo;
+  }
 }

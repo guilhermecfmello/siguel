@@ -2,12 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Cidade.h"
+
 /*INCLUINDO DADOS PARA O SEGUNDO COMMIT*/
 typedef struct _cidade{
   Lista qua;
   Lista hid;
   Lista sem;
   Lista tor;
+  Tree tQua;/*Quadtree com os elementos da cidade*/
+  Tree tHid;/*Quadtree com os elementos da cidade*/
+  Tree tSem;/*Quadtree com os elementos da cidade*/
+  Tree tTor;/*Quadtree com os elementos da cidade*/
   FILE *saiSvg;/*ARQUIVO DE SAIDA EM FORMATO SVG, CONTEM O MAPA DA CIDADE*/
   FILE *saiTxtConsultas;/*ARQUIVO DE SAIDA TXT, DESCRICAO DAS CONSULTAS FEITAS*/
   FILE *saiTxtComp;/*ARQUIVO DE SAIDA TXT, O NUMERO DE COMPARACOES PARA INSERCAO/REMOCAO DA LISTA*/
@@ -30,6 +35,10 @@ Cidade createCidade(){
   c->hid = createList();
   c->sem = createList();
   c->tor = createList();
+  c->tQua = quadtree_create();
+  c->tHid = quadtree_create();
+  c->tSem = quadtree_create();
+  c->tTor = quadtree_create();
   c->saiSvg = NULL;
   c->saiTxtConsultas = NULL;
   c->saiTxtComp = NULL;
@@ -46,6 +55,8 @@ Cidade createCidade(){
   c->numQuadras = 0;
   return (Cidade)c;
 }
+
+
 
 Quadra insereQuadra(Cidade c, Quadra q){
   cidade *cid = (cidade*) c;
@@ -121,33 +132,104 @@ void setCoresSemaforos(Cidade c, char *cfill, char *cstrk){
   strcpy(cid->cstrkSemaforos,cstrk);
 }
 
+void imprimeQuadrasSvgRecursive(Cidade c, Tree t, Posic aux, FILE *arq){
+  Posic content;
+  cidade *cid = (cidade*) c;
+  double x, y, w, h;
+  char *cep;
+  if(aux!=NULL){
+    imprimeQuadrasSvgRecursive(c,t, quadtree_getNodeNE(t, aux),arq);
+    imprimeQuadrasSvgRecursive(c,t, quadtree_getNodeNW(t, aux),arq);
+    imprimeQuadrasSvgRecursive(c,t, quadtree_getNodeSE(t, aux),arq);
+    imprimeQuadrasSvgRecursive(c,t, quadtree_getNodeSW(t, aux),arq);
+    content = quadtree_get(aux);
+    x = getQuadraX(content);
+    y = getQuadraY(content);
+    w = getQuadraW(content);
+    h = getQuadraH(content);
+    cep = getQuadraCep(content);
+    fprintf(arq," <rect x=\"%f\" y=\"%f\" width=\"%f\" height=\"%f\"", x, y, w, h);
+    fprintf(arq," fill=\"%s\" stroke=\"%s\" stroke-width=\"2\"/>\n", cid->cfillQuadras, cid->cstrkQuadras);
+    x += 6;
+    y += 25;
+    fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">", x, y);
+    fprintf(arq,"%s</text>\n",cep);
+  }
+}
+void imprimeHidrantesSvgRecursive(Cidade c, Tree t, Posic aux, FILE *arq){
+  double x, y;
+  Posic content;
+  cidade *cid = (cidade*) c;
+  if(aux!=NULL){
+    imprimeHidrantesSvgRecursive(c,t, quadtree_getNodeNE(t, aux),arq);
+    imprimeHidrantesSvgRecursive(c,t, quadtree_getNodeNW(t, aux),arq);
+    imprimeHidrantesSvgRecursive(c,t, quadtree_getNodeSE(t, aux),arq);
+    imprimeHidrantesSvgRecursive(c,t, quadtree_getNodeSW(t, aux),arq);
+    content = quadtree_get(aux);
+    x = getHidranteX(content);
+    y = getHidranteY(content);
+    fprintf(arq," <circle cx=\"%f\" cy=\"%f\" r=\"10\"",x,y);
+    fprintf(arq," fill=\"%s\" stroke=\"%s\"/>\n",cid->cfillHidrantes, cid->cstrkHidrantes);
+    x -= 5;
+    y += 5;
+    fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">H</text>\n",x,y);
+  }
+}
+
+void imprimeSemaforosSvgRecursive(Cidade c, Tree t, Posic aux, FILE *arq){
+  Posic content;
+  cidade *cid = (cidade*) c;
+  double x, y;
+  if(aux!=NULL){
+    imprimeSemaforosSvgRecursive(c,t, quadtree_getNodeNE(t, aux),arq);
+    imprimeSemaforosSvgRecursive(c,t, quadtree_getNodeNW(t, aux),arq);
+    imprimeSemaforosSvgRecursive(c,t, quadtree_getNodeSE(t, aux),arq);
+    imprimeSemaforosSvgRecursive(c,t, quadtree_getNodeSW(t, aux),arq);
+    content = quadtree_get(aux);
+    x = getSemaforoX(content);
+    y = getSemaforoY(content);
+    fprintf(arq," <rect x=\"%f\" y=\"%f\" width=\"10\" height=\"20\"",x,y);
+    fprintf(arq," fill=\"%s\" stroke=\"%s\"/>\n",cid->cfillSemaforos,cid->cstrkSemaforos);
+    y = y + 10;
+    fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">S</text>\n",x,y);
+  }
+}
+
+void imprimeTorresSvgRecursive(Cidade c, Tree t, Posic aux, FILE *arq){
+  Posic content;
+  cidade *cid = (cidade*) c;
+  double x, y;
+  if(aux!=NULL){
+    imprimeTorresSvgRecursive(c,t, quadtree_getNodeNE(t, aux),arq);
+    imprimeTorresSvgRecursive(c,t, quadtree_getNodeNW(t, aux),arq);
+    imprimeTorresSvgRecursive(c,t, quadtree_getNodeSE(t, aux),arq);
+    imprimeTorresSvgRecursive(c,t, quadtree_getNodeSW(t, aux),arq);
+    content = quadtree_get(aux);
+    x = getTorreX(content);
+    y = getTorreY(content);
+    fprintf(arq," <circle cx=\"%f\" cy=\"%f\" r=\"10\"", x, y);
+    fprintf(arq," fill=\"%s\" stroke=\"%s\"/>",cid->cfillTorres, cid->cstrkTorres);
+    x -= 5;
+    y += 5;
+    fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">T</text>\n",++x,++y);
+  }
+}
+
 void imprimeQuadrasSvg(Cidade c){
-    double x, y, w, h;
-    char *cep;
-    FILE *arq;
     cidade *cid = (cidade*) c;
-    Posic aux, content;
-    arq = getArchSvg(c);
-    aux = getFirst(cid->qua);
-    while(aux!=NULL){
-      content = get(cid->qua,aux);
-      x = getQuadraX(content);
-      y = getQuadraY(content);
-      w = getQuadraW(content);
-      h = getQuadraH(content);
-      cep = getQuadraCep(content);
-      fprintf(arq," <rect x=\"%f\" y=\"%f\" width=\"%f\" height=\"%f\"", x, y, w, h);
-      fprintf(arq," fill=\"%s\" stroke=\"%s\" stroke-width=\"2\"/>\n", cid->cfillQuadras, cid->cstrkQuadras);
-      x += 6;
-      y += 25;
-      /*fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">", x, y);
-      fprintf(arq,"%s</text>\n", cep);*/
-      aux = getNext(cid->qua,aux);
-    }
+    Posic aux;
+    aux = quadtree_getRoot(cid->tQua);
+    imprimeQuadrasSvgRecursive(c,cid->tQua,aux,getArchSvg(c));
 }
 
 void imprimeHidrantesSvg(Cidade c){
-  double x, y;
+  cidade *cid = (cidade*) c;
+  Posic aux;
+  aux = quadtree_getRoot(cid->tHid);
+  if(aux==NULL)
+    printf("\n>>>AUX NULO NA CIDADE");
+  imprimeHidrantesSvgRecursive(c,cid->tHid,aux,getArchSvg(c));
+  /*double x, y;
   Posic aux, content;
   FILE *arq;
   cidade *cid = (cidade*) c;
@@ -163,11 +245,15 @@ void imprimeHidrantesSvg(Cidade c){
     y += 5;
     fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">H</text>\n",x,y);
     aux = getNext(cid->hid, aux);
-  }
+  }*/
 }
 
 void imprimeSemaforosSvg(Cidade c){
-  int i;
+  cidade *cid = (cidade*) c;
+  Posic aux;
+  aux = quadtree_getRoot(cid->tSem);
+  imprimeSemaforosSvgRecursive(c,cid->tSem,aux,getArchSvg(c));
+  /*int i;
   double x, y;
   Posic aux;
   Semaforo content;
@@ -186,11 +272,15 @@ void imprimeSemaforosSvg(Cidade c){
     y = y + 10;
     fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">S</text>\n",x,y);
     aux = getNext(cid->sem,aux);
-  }
+  }*/
 }
 
 void imprimeTorresSvg(Cidade c){
-  double x, y;
+  cidade *cid = (cidade*) c;
+  Posic aux;
+  aux = quadtree_getRoot(cid->tTor);
+  imprimeTorresSvgRecursive(c,cid->tTor,aux,getArchSvg(c));
+  /*double x, y;
   Posic aux, content;
   FILE *arq;
   cidade *cid = (cidade*) c;
@@ -206,7 +296,7 @@ void imprimeTorresSvg(Cidade c){
     y += 5;
     fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">T</text>\n",++x,++y);
     aux = getNext(cid->sem,aux);
-  }
+  }*/
 }
 
 
@@ -216,7 +306,7 @@ int getNumQuadras(Cidade c){
   return cid->numQuadras;
 }
 
-Quadra getQuadraRet(Cidade c, Rect r, int *comp){
+/*Quadra getQuadraRet(Cidade c, Rect r, int *comp){
   cidade *cid = (cidade*) c;
   Quadra aux;
   Posic node = getFirst(cid->qua);
@@ -241,175 +331,227 @@ Quadra getQuadraCirc(Cidade c, Circle circ, int *comp){
   }
   return NULL;
 }
+*/
+
+
+void getQuadraRetRecursive(Posic node, Rect r, Tree t, Quadra *q);
+
+void getQuadraCircRecursive(Posic node, Circle c, Tree t, Quadra *q);
+
+void getHidranteRetRecursive(Posic node, Rect r, Tree t, Hidrante *h);
+
+void getHidranteCircRecursive(Posic node, Circle c, Tree t, Hidrante *h);
+
+void getSemaforoRetRecursive(Posic node, Rect r, Tree t, Semaforo *s);
+
+void getSemaforoCircRecursive(Posic node, Circle c, Tree t, Semaforo *s);
+
+void getTorreCircRecursive(Posic node, Circle c, Tree t, Torre *tor);
+
+void getTorreRetRecursive(Posic node, Rect r, Tree t, Torre *tor);
+
+
+
+
+Quadra getQuadraRet(Cidade cid,Rect r){
+  cidade *c = (cidade*) cid;
+  Quadra aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(c->tQua);
+  getQuadraRetRecursive(node,r,c->tQua, &aux);
+  return aux;
+}
+Quadra getQuadraCirc(Cidade c,Circle circ){
+  cidade *cid = (cidade*) c;
+  Quadra aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tQua);
+  getQuadraCircRecursive(node,circ,cid->tQua, &aux);
+  return aux;
+}
+
 
 Hidrante getHidranteRet(Cidade c, Rect r){
-  double x, y;
   cidade *cid = (cidade*) c;
-  Hidrante h;
-  Posic node = getFirst(cid->hid);
-  while(node!=NULL){
-    h = get(cid->hid,node);
-    x = getHidranteX(h);
-    y = getHidranteY(h);
-    if(verPointRectInt(r,x,y)) return node;
-    node = getNext(cid->hid,node);
-  }
-  return NULL;
+  Hidrante aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tHid);
+  getHidranteRetRecursive(node,r,cid->tHid, &aux);
+  return aux;
 }
 
 Hidrante getHidranteCirc(Cidade c, Circle circ){
-  double x, y;
   cidade *cid = (cidade*) c;
-  Hidrante h;
-  Posic node = getFirst(cid->hid);
-  while(node!=NULL){
-    h = get(cid->hid,node);
-    x = getHidranteX(h);
-    y = getHidranteY(h);
-    if(verPointCircInt(circ,x,y)) return node;
-    node = getNext(cid->hid,node);
-  }
-  return NULL;
+  Hidrante aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tHid);
+  getHidranteCircRecursive(node,circ,cid->tHid, &aux);
+  return aux;
 }
 
 Semaforo getSemaforoRet(Cidade c, Rect r){
-  double x, y;
   cidade *cid = (cidade*) c;
-  Semaforo s;
-  Posic node = getFirst(cid->sem);
-  while(node!=NULL){
-    s = get(cid->sem,node);
-    x = getSemaforoX(s);
-    y = getSemaforoY(s);
-    if(verPointRectInt(r,x,y)) return node;
-    node = getNext(cid->sem,node);
-  }
-  return NULL;
+  Semaforo aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tSem);
+  getSemaforoRetRecursive(node,r,cid->tSem, &aux);
+  return aux;
 }
+
+
 
 Semaforo getSemaforoCirc(Cidade c, Circle circ){
-  double x, y;
   cidade *cid = (cidade*) c;
-  Semaforo s;
-  Posic node = getFirst(cid->sem);
-  while(node!=NULL){
-    s = get(cid->sem,node);
-    x = getSemaforoX(s);
-    y = getSemaforoY(s);
-    if(verPointCircInt(circ,x,y)) return node;
-    node = getNext(cid->sem,node);
-  }
-  return NULL;
+  Semaforo aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tSem);
+  getSemaforoCircRecursive(node,circ,cid->tSem, &aux);
+  return aux;
 }
 
+
 Torre getTorreRet(Cidade c, Rect r){
-  double x, y;
   cidade *cid = (cidade*) c;
-  Torre t;
-  Posic node = getFirst(cid->tor);
-  while(node!=NULL){
-    t = get(cid->tor,node);
-    x = getTorreX(t);
-    y = getTorreY(t);
-    if(verPointRectInt(r,x,y)) return node;
-    node = getNext(cid->tor,node);
-  }
-  return NULL;
+  Torre aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tTor);
+  getTorreRetRecursive(node,r,cid->tTor, &aux);
+  return aux;
 }
 
 Torre getTorreCirc(Cidade c, Circle circ){
-  double x, y;
   cidade *cid = (cidade*) c;
-  Torre t;
-  Posic node = getFirst(cid->tor);
-  while(node!=NULL){
-    t = get(cid->tor,node);
-    x = getSemaforoX(t);
-    y = getSemaforoY(t);
-    if(verPointCircInt(circ,x,y)) return node;
-    node = getNext(cid->tor,node);
-  }
-  return NULL;
+  Torre aux;
+  Posic node;
+  aux = NULL;
+  node = quadtree_getRoot(cid->tTor);
+  getTorreCircRecursive(node,circ,cid->tTor, &aux);
+  return aux;
 }
 
 void removeQuadra(Cidade c, Quadra q){
   cidade *cid = (cidade*) c;
-  remover(cid->qua,q);
+
+  quadtree_remove(cid->tQua,q);
 }
 
 void removeHidrante(Cidade c, Hidrante h){
   cidade *cid = (cidade*) c;
-  remover(cid->hid,h);
+  quadtree_remove(cid->tHid,h);
 }
 
 void removeSemaforo(Cidade c, Semaforo s){
   cidade *cid = (cidade*) c;
-  remover(cid->sem,s);
+  quadtree_remove(cid->tSem,s);
 }
 
 void removeTorre(Cidade c, Torre t){
   cidade *cid = (cidade*) c;
-  remover(cid->tor,t);
+  quadtree_remove(cid->tTor,t);
+}
+
+void procuraQuadraRecursive(Posic node, Tree t, Quadra *q, char *end){
+  Quadra aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(strcmp(getQuadraCep(aux),end)==0){
+      *q = node;
+    }
+    procuraQuadraRecursive(quadtree_getNodeNE(t, node),t,q,end);
+    procuraQuadraRecursive(quadtree_getNodeNW(t, node),t,q,end);
+    procuraQuadraRecursive(quadtree_getNodeSE(t, node),t,q,end);
+    procuraQuadraRecursive(quadtree_getNodeSW(t, node),t,q,end);
+  }
 }
 
 Quadra procuraQuadra(Cidade c, char *end){
-  char *cep;
+  Quadra qua;
   cidade *cid = (cidade*) c;
-  Posic node;
-  Quadra aux;
-  node = getFirst(cid->qua);
-  while(node!=NULL){
-    aux = get(cid->qua, node);
-    cep = getQuadraCep(aux);
-    if(strcmp(cep,end)==0) return aux;
-    node = getNext(cid->qua, node);
+  qua = NULL;
+  procuraQuadraRecursive(quadtree_getRoot(cid->tQua),cid->tQua,&qua,end);
+  return qua;
+}
+/*char *cep;
+cidade *cid = (cidade*) c;
+Posic node;
+Quadra aux;
+node = getFirst(cid->qua);
+while(node!=NULL){
+aux = get(cid->qua, node);
+cep = getQuadraCep(aux);
+if(strcmp(cep,end)==0) return aux;
+node = getNext(cid->qua, node);
+}
+return NULL;*/
+void procuraHidranteRecursive(Posic node, Tree t, Hidrante *h, char *end){
+  Hidrante aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(strcmp(getHidranteId(aux),end)==0)
+      *h = node;
+    procuraHidranteRecursive(quadtree_getNodeNE(t, node),t,h,end);
+    procuraHidranteRecursive(quadtree_getNodeNW(t, node),t,h,end);
+    procuraHidranteRecursive(quadtree_getNodeSE(t, node),t,h,end);
+    procuraHidranteRecursive(quadtree_getNodeSW(t, node),t,h,end);
   }
-  return NULL;
 }
 
 Hidrante procuraHidrante(Cidade c, char *end){
-  char *id;
+  Hidrante hid;
   cidade *cid = (cidade*) c;
-  Posic node;
-  Quadra aux;
-  node = getFirst(cid->hid);
-  while(node!=NULL){
-    aux = get(cid->hid,node);
-    id = getHidranteId(aux);
-    if(strcmp(id,end)==0) return aux;
-    node = getNext(cid->hid, node);
+  hid = NULL;
+  procuraHidranteRecursive(quadtree_getRoot(cid->tHid),cid->tHid,&hid,end);
+  return hid;
+}
+
+void procuraSemaforoRecursive(Posic node, Tree t, Semaforo *s, char *end){
+  Semaforo aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(strcmp(getSemaforoId(aux),end)==0)
+      *s = node;
+    procuraSemaforoRecursive(quadtree_getNodeNE(t, node),t,s,end);
+    procuraSemaforoRecursive(quadtree_getNodeNW(t, node),t,s,end);
+    procuraSemaforoRecursive(quadtree_getNodeSE(t, node),t,s,end);
+    procuraSemaforoRecursive(quadtree_getNodeSW(t, node),t,s,end);
   }
-  return NULL;
 }
 
 Semaforo procuraSemaforo(Cidade c, char *end){
-  char *id;
+  Semaforo sem;
   cidade *cid = (cidade*) c;
-  Posic node;
-  Quadra aux;
-  node = getFirst(cid->sem);
-  while(node!=NULL){
-    aux = get(cid->sem, node);
-    id = getSemaforoId(aux);
-    if(strcmp(id,end)==0) return aux;
-    node = getNext(cid->sem, node);
-  }
-  return NULL;
+  sem = NULL;
+  procuraSemaforoRecursive(quadtree_getRoot(cid->tSem),cid->tSem,&sem,end);
+  return sem;
 }
 
-Torre procuraTorre(Cidade c, char *end){
-  char *id;
-  cidade *cid = (cidade*) c;
-  Posic node;
-  Quadra aux;
-  node = getFirst(cid->tor);
-  while(node!=NULL){
-    aux = get(cid->tor,node);
-    id = getTorreId(aux);
-    if(strcmp(id,end)==0) return aux;
-    node = getNext(cid->tor, node);
+void procuraTorreRecursive(Posic node, Tree t, Torre *tor, char *end){
+  Semaforo aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(strcmp(getTorreId(aux),end)==0)
+      *tor = node;
+    procuraTorreRecursive(quadtree_getNodeNE(t, node),t,tor,end);
+    procuraTorreRecursive(quadtree_getNodeNW(t, node),t,tor,end);
+    procuraTorreRecursive(quadtree_getNodeSE(t, node),t,tor,end);
+    procuraTorreRecursive(quadtree_getNodeSW(t, node),t,tor,end);
   }
-  return NULL;
+}
+
+
+Torre procuraTorre(Cidade c, char *end){
+  Torre tor;
+  cidade *cid = (cidade*) c;
+  tor = NULL;
+  procuraTorreRecursive(quadtree_getRoot(cid->tTor),cid->tTor,&tor,end);
+  return tor;
 }
 
 Posic procuraElemento(Cidade c, char *end, char *typeElement){
@@ -450,7 +592,6 @@ void openArchSvg(char *patch, char *nome, char *qry, Cidade c){
     nomeCompleto = malloc(sizeof(char)*(strlen(patch)+strlen(nome)+strlen(qry)+6));
     sprintf(nomeCompleto,"%s%s-%s.svg",patch,nome,qry);
   }
-  printf("Nome Completo - openArchSvg: %s",  nomeCompleto);
   cid->saiSvg = fopen(nomeCompleto,"w");
 
 
@@ -484,7 +625,6 @@ void openArchTxtComp(char *patch, char *nome, char *type, Cidade c){
 void openArchGeo(char *patch, char *nome, Cidade c){
   char *nomeCompleto;
   cidade *cid = (cidade*) c;
-  printf("\nPatch: %s |Nome: %s\n", patch, nome);
   if(patch!=NULL){
     nomeCompleto = malloc(sizeof(char)*(strlen(patch)+strlen(nome)+5));
     sprintf(nomeCompleto,"%s%s",patch,nome);
@@ -493,7 +633,6 @@ void openArchGeo(char *patch, char *nome, Cidade c){
     nomeCompleto = malloc(sizeof(char)*(strlen(nome)+5));
     sprintf(nomeCompleto,"%s",nome);
   }
-  printf("nomeCompleto no openArchGeo: %s", nomeCompleto);
   cid->entGeo = fopen(nomeCompleto,"r");
   if(cid->entGeo==NULL)
     printf("\n###DEU RUIM NA ABERTURA DO ARQUIVO GEO");
@@ -567,7 +706,156 @@ FILE *getArchSvg(Cidade c){
   return cid->saiSvg;
 }
 
-Quadra getQuadras(Cidade c){
-  cidade *cid = (cidade*) c;
-  return cid->qua;
+Quadra getQuadrasList(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->qua;
+}
+
+Torre getTorresList(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->tor;
+}
+
+Semaforo getSemaforosList(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->sem;
+}
+
+Hidrante getHidrantesList(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->hid;
+}
+
+Tree setQuadrasQuadTree(Cidade cid, Tree t){
+  cidade *c = (cidade*) cid;
+  c->tQua = t;
+  return c->tQua;
+}
+
+Tree setSemaforosQuadTree(Cidade cid, Tree t){
+  cidade *c = (cidade*) cid;
+  c->tSem = t;
+  return c->tSem;
+}
+
+Tree setHidrantesQuadTree(Cidade cid, Tree t){
+  cidade *c = (cidade*) cid;
+  c->tHid = t;
+  return c->tHid;
+}
+
+Tree setTorresQuadTree(Cidade cid, Tree t){
+  cidade *c = (cidade*) cid;
+  c->tTor = t;
+  return c->tTor;
+}
+
+void getTorreCircRecursive(Posic node, Circle c, Tree t, Torre *tor){
+  Torre aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verPointCircInt(c,getTorreX(aux),getTorreY(aux)))
+      *tor = node;
+    getTorreCircRecursive(quadtree_getNodeNE(t, node),c,t,tor);
+    getTorreCircRecursive(quadtree_getNodeNW(t, node),c,t,tor);
+    getTorreCircRecursive(quadtree_getNodeSE(t, node),c,t,tor);
+    getTorreCircRecursive(quadtree_getNodeSW(t, node),c,t,tor);
+  }
+}
+
+void getTorreRetRecursive(Posic node, Rect r, Tree t, Torre *tor){
+  Torre aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verPointRectInt(r,getTorreX(aux),getTorreY(aux)))
+      *tor = node;
+    getTorreRetRecursive(quadtree_getNodeNE(t, node),r,t,tor);
+    getTorreRetRecursive(quadtree_getNodeNW(t, node),r,t,tor);
+    getTorreRetRecursive(quadtree_getNodeSE(t, node),r,t,tor);
+    getTorreRetRecursive(quadtree_getNodeSW(t, node),r,t,tor);
+  }
+}
+
+void getSemaforoRetRecursive(Posic node, Rect r, Tree t, Semaforo *s){
+  Quadra aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verPointRectInt(r,getSemaforoX(aux),getSemaforoY(aux)))
+      *s = node;
+    getSemaforoRetRecursive(quadtree_getNodeNE(t, node),r,t,s);
+    getSemaforoRetRecursive(quadtree_getNodeNW(t, node),r,t,s);
+    getSemaforoRetRecursive(quadtree_getNodeSE(t, node),r,t,s);
+    getSemaforoRetRecursive(quadtree_getNodeSW(t, node),r,t,s);
+  }
+}
+void getSemaforoCircRecursive(Posic node, Circle c, Tree t, Semaforo *s){
+  Quadra aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verPointCircInt(c,getSemaforoX(aux),getSemaforoY(aux)))
+      *s = node;
+    getSemaforoCircRecursive(quadtree_getNodeNE(t, node),c,t,s);
+    getSemaforoCircRecursive(quadtree_getNodeNW(t, node),c,t,s);
+    getSemaforoCircRecursive(quadtree_getNodeSE(t, node),c,t,s);
+    getSemaforoCircRecursive(quadtree_getNodeSW(t, node),c,t,s);
+  }
+}
+void getHidranteRetRecursive(Posic node, Rect r, Tree t, Hidrante *h){
+  Hidrante aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+
+    if(verPointRectInt(r,getHidranteX(aux),getHidranteY(aux)))
+      *h = node;
+    getHidranteRetRecursive(quadtree_getNodeNE(t, node),r,t,h);
+    getHidranteRetRecursive(quadtree_getNodeNW(t, node),r,t,h);
+    getHidranteRetRecursive(quadtree_getNodeSE(t, node),r,t,h);
+    getHidranteRetRecursive(quadtree_getNodeSW(t, node),r,t,h);
+  }
+}
+void getHidranteCircRecursive(Posic node, Circle c, Tree t, Hidrante *h){
+  Quadra aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verPointCircInt(c,getHidranteX(aux),getHidranteY(aux)))
+      *h = node;
+    getHidranteCircRecursive(quadtree_getNodeNE(t, node),c,t,h);
+    getHidranteCircRecursive(quadtree_getNodeNW(t, node),c,t,h);
+    getHidranteCircRecursive(quadtree_getNodeSE(t, node),c,t,h);
+    getHidranteCircRecursive(quadtree_getNodeSW(t, node),c,t,h);
+  }
+}
+
+void getQuadraRetRecursive(Posic node, Rect r, Tree t, Quadra *q){
+  Quadra aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verQuadraRet(aux,r))
+      *q = node;
+    getQuadraRetRecursive(quadtree_getNodeNE(t, node),r,t,q);
+    getQuadraRetRecursive(quadtree_getNodeNW(t, node),r,t,q);
+    getQuadraRetRecursive(quadtree_getNodeSE(t, node),r,t,q);
+    getQuadraRetRecursive(quadtree_getNodeSW(t, node),r,t,q);
+  }
+}
+void getQuadraCircRecursive(Posic node, Circle c, Tree t, Quadra *q){
+  Quadra aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    if(verQuadraCirc(aux,c))
+      *q = node;
+    getQuadraCircRecursive(quadtree_getNodeNE(t, node),c,t,q);
+    getQuadraCircRecursive(quadtree_getNodeNW(t, node),c,t,q);
+    getQuadraCircRecursive(quadtree_getNodeSE(t, node),c,t,q);
+    getQuadraCircRecursive(quadtree_getNodeSW(t, node),c,t,q);
+  }
+}
+
+
+void LimpaListas(Cidade cid){
+  cidade *c = (cidade*) cid;
+  liberaLista(c->qua);
+  liberaLista(c->hid);
+  liberaLista(c->sem);
+  liberaLista(c->tor);
 }

@@ -16,7 +16,7 @@ Pilha createPilha(){
   p->size = 0;
 }
 
-void addPilha(Pilha pil, PosicP elemento){
+void push(Pilha pil, PosicP elemento){
   pilha *p = (pilha*) pil;
   posic *po = (posic*)malloc(sizeof(posic));
   po->element = elemento;
@@ -31,7 +31,7 @@ void addPilha(Pilha pil, PosicP elemento){
   p->size++;
 }
 
-PosicP getPilha(Pilha pil){
+PosicP pop(Pilha pil){
   pilha *pilhaHead = (pilha*) pil;
   posic *aux;
   PosicP elementNode;
@@ -56,7 +56,7 @@ PosicP getPilha(Pilha pil){
   }
 }
 
-PosicP seeTopPilha(Pilha pil){
+PosicP topPilha(Pilha pil){
   pilha *p = (pilha*) pil;
   posic *aux = NULL;
   if(pil!=NULL){
@@ -70,7 +70,7 @@ PosicP seeTopPilha(Pilha pil){
   return NULL;
 }
 
-PosicP seeNextTopPilha(Pilha pil){
+PosicP nextTopPilha(Pilha pil){
   pilha *p = (pilha*) pil;
   posic *aux = NULL;
   if(pil!=NULL){

@@ -34,7 +34,6 @@ int main(int argc,char *argv[]){
   entradaPadrao = filtraNome(entradaPadrao);
   dirSaida = colocaBarra(dirSaida);
   dirEntrada = colocaBarra(dirEntrada);
-  printf("\nEntradaPadrao: %s\n", entradaPadrao);
 
   /*printf(">>dirEntrada na main: %s", dirEntrada);*/
   if(nomeEntradaQry!=NULL){
@@ -53,6 +52,11 @@ int main(int argc,char *argv[]){
 
   /*TRATAMENTO DOS ARQUIVOS DE ENTRADA DA CIDADE*/
   cid = processoGeo(entradaPadrao,dirSaida,nomeBaseQry, &f, cid);
+  /*MUDANCA DA ESTRUTURA DE DADOS DOS ELEMENTOS DA CIDADE
+  PASSANDO DE LISTA PARA QUADTREE BALANCEADA PELO CONVEXHULL*/
+  listToQuadTreeCH(cid);
+  LimpaListas(cid);
+  
   cid = processoQry(cid);
 
   /*IMPRESSAO DA CIDADE NO ARQUIVO QRY*/
@@ -65,11 +69,6 @@ int main(int argc,char *argv[]){
   imprimeSemaforosSvg(cid);
   imprimeHidrantesSvg(cid);
   imprimeTorresSvg(cid);
-
-  gx = &getQuadraX;
-  gy = &getQuadraY;
-  q = getQuadras(cid);
-  ch = convexHull(q, gx, gy);
 
   /*FECHAMENTO DOS ARQUIVOS DA CIDADE*/
   closeArchSvg(cid);

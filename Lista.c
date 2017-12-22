@@ -15,6 +15,7 @@ typedef struct forma2{
   Item content;
 }posic;
 
+
 Lista createList(){
   head *newList = (head*)malloc(sizeof(head));
   newList->first = NULL;
@@ -77,7 +78,7 @@ void remover(Lista list, Posic item){
 
 Item get(Lista l, Posic p){
   posic *aux = (posic*) p;
-  return (Lista)aux->content;
+  return aux->content;
 }
 
 Posic insertBefore(Lista l, Posic p, Item item){
@@ -166,4 +167,18 @@ Posic getPrevious(Lista l, Posic p){
   posic *obj = (posic*) p;
   obj = obj->prev;
   return (Posic)obj;
+}
+
+void liberaLista(Lista l){
+  int i;
+  head *h = (head*)l;
+  posic *p1, *p2;
+  if(h->size>1){
+    p1 = h->first;
+    for(i=h->size;i>0;i--){
+      p2 = p1->next;
+      free(p1);
+      p1 = p2;
+    }
+  }
 }

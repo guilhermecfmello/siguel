@@ -5,10 +5,10 @@
 typedef struct _node{
   double x;
   double y;
-  Posic nw;
-  Posic ne;
-  Posic sw;
-  Posic se;
+  PosicQ nw;
+  PosicQ ne;
+  PosicQ sw;
+  PosicQ se;
   Content content;
 }node;
 
@@ -26,7 +26,7 @@ Tree quadtree_create(){
   return h;
 }
 
-void quadtree_recursiveAdd(Tree t, Posic p){
+void quadtree_recursiveAdd(Tree t, PosicQ p){
   node *n1;
   if(p!=NULL){
     n1 = (node*) p;
@@ -39,7 +39,7 @@ void quadtree_recursiveAdd(Tree t, Posic p){
   }
 }
 
-Posic quadtree_getSomeNode(Tree t, Posic p){
+PosicQ quadtree_getSomeNode(Tree t, PosicQ p){
   node *n;
   n = (node*) p;
   if(n->nw!=NULL) return n->nw;
@@ -49,7 +49,7 @@ Posic quadtree_getSomeNode(Tree t, Posic p){
   else return NULL;
 }
 
-Posic quadtree_add(Tree t, Content c, double x, double y){
+PosicQ quadtree_add(Tree t, Content c, double x, double y){
   node *n, *aux, *bef;
   int op, down;
   head *tree = (head*) t;
@@ -112,7 +112,7 @@ Posic quadtree_add(Tree t, Content c, double x, double y){
           tree->height = down;
         break;
       default:
-        printf("\n***CONTEUDO NAO INCLUIO NA ARVORE***\n");
+        printf("\n***CONTEUDO NAO INCLUIDO NA ARVORE***\n");
         break;
     }
   }
@@ -123,7 +123,7 @@ Posic quadtree_add(Tree t, Content c, double x, double y){
   return n;
 }
 
-int quadtree_compareQuad(Posic p1, Posic p2){
+int quadtree_compareQuad(PosicQ p1, PosicQ p2){
   node *n1, *n2;
   n1 = (node*) p1;
   n2 = (node*) p2;
@@ -134,32 +134,32 @@ int quadtree_compareQuad(Posic p1, Posic p2){
   else return -1;
 }
 
-Posic quadtree_getRoot(Tree t){
+PosicQ quadtree_getRoot(Tree t){
   head *h = (head*) t;
   return h->root;
 }
 
-Content quadtree_get(Posic p){
+Content quadtree_get(PosicQ p){
   node *n = (node*) p;
   return n->content;
 }
 
-Posic quadtree_getNodeNW(Tree t, Posic p){
+PosicQ quadtree_getNodeNW(Tree t, PosicQ p){
   node *n = (node*) p;
   return n->nw;
 }
 
-Posic quadtree_getNodeNE(Tree t, Posic p){
+PosicQ quadtree_getNodeNE(Tree t, PosicQ p){
   node *n = (node*) p;
   return n->ne;
 }
 
-Posic quadtree_getNodeSW(Tree t, Posic p){
+PosicQ quadtree_getNodeSW(Tree t, PosicQ p){
   node *n = (node*) p;
   return n->sw;
 }
 
-Posic quadtree_getNodeSE(Tree t, Posic p){
+PosicQ quadtree_getNodeSE(Tree t, PosicQ p){
   node *n = (node*) p;
   return n->se;
 }
@@ -174,33 +174,33 @@ int quadtree_getSize(Tree t){
   return h->size;
 }
 
-void quadtree_resetNW(Tree t, Posic p){
+void quadtree_resetNW(Tree t, PosicQ p){
   node *n = (node*) p;
   n->nw = NULL;
 }
-void quadtree_resetNE(Tree t, Posic p){
+void quadtree_resetNE(Tree t, PosicQ p){
   node *n = (node*) p;
   n->ne = NULL;
 }
-void quadtree_resetSW(Tree t, Posic p){
+void quadtree_resetSW(Tree t, PosicQ p){
   node *n = (node*) p;
   n->sw = NULL;
 }
-void quadtree_resetSE(Tree t, Posic p){
+void quadtree_resetSE(Tree t, PosicQ p){
   node *n = (node*) p;
   n->se = NULL;
 }
 
-int quadtree_isLeaf(Tree t, Posic p){
+int quadtree_isLeaf(Tree t, PosicQ p){
   node *n = (node*) p;
   if(n->nw==NULL && n->ne==NULL && n->sw==NULL && n->se==NULL) return 1;
   else return 0;
 }
 
-int quadtree_remove(Tree t, Posic p){
+int quadtree_remove(Tree t, PosicQ p){
   int quad;
   int *teste1, *teste2;
-  Posic down, aux2;
+  PosicQ down, aux2;
   node *find, *aux, *end;
   head *h;
   find = (node*) p;
@@ -224,7 +224,6 @@ int quadtree_remove(Tree t, Posic p){
     }
     teste1 = quadtree_get(aux);
     teste2 = quadtree_get(down);
-    printf("Teste aux: %d down: %d\n", *teste1,*teste2);
     quad = quadtree_compareQuad(aux,down);
     if(quad==1) aux->nw = NULL;
     else if(quad==2) aux->ne = NULL;
@@ -240,7 +239,7 @@ int quadtree_remove(Tree t, Posic p){
 }
 
 
-Posic quadtree_down(Tree t, Posic p1, Posic p2){
+PosicQ quadtree_down(Tree t, PosicQ p1, PosicQ p2){
   int quad;
   if(p1 !=NULL && p2 != NULL){
     quad = quadtree_compareQuad(p1,p2);
@@ -252,8 +251,10 @@ Posic quadtree_down(Tree t, Posic p1, Posic p2){
   }
   return NULL;
 }
+
+
 /*FUNCOES PARA EXCLUIR ABAIXO - APENAS PARA TESTE*/
-void quadtree_print(Posic p){
+void quadtree_print(PosicQ p){
   int *i;
   node *n;
   if(p!=NULL){

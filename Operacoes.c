@@ -7,7 +7,6 @@
 #include "Circulo.h"
 #include "Lista.h"
 
-
 int parametroAcc(int argc, char *argv[]){
   int i, j;
   for(i=1;i<argc;i++){
@@ -304,23 +303,6 @@ double getMenorYCircRect(Forma c, Forma r){
   else return yR;
 }
 
-/*int procuraFigura(Forma *f1, char *typeF1, void *listaCirc, void *listaRet, int id){
-  *f1 = procuraCirc(listaCirc,id);
-  if(*f1!=NULL){
-    *typeF1 = 'c';
-    return 1;
-  }
-  else{
-    *f1 = procuraRect(listaRet,id);
-    if(f1!=NULL){
-     *typeF1 = 'r';
-     return 1;
-    }
-    else return 0;
-  }
-}*/
-
-
 int verQuadraRet(Quadra q, Rect r){
   double x, y, larg, alt;
   x = getQuadraX(q);
@@ -347,4 +329,21 @@ int verQuadraCirc(Quadra q, Circle c){
   else cond2 = 0;
   if(cond1&&cond2) return 1;
   else return 0;
+}
+
+Tree listToQuadtree(Lista l, getX gx, getY gy){
+  Tree t;
+  Pilha ch, aux;
+  double x, y;
+  t = quadtree_create();
+  if(length(l)>0){
+    ch = convexHull(l, gx, gy);
+    while(getSizePilha(ch)>0){
+      aux = pop(ch);
+      x = gx(aux);
+      y = gy(aux);
+      quadtree_add(t,aux,x,y);
+    }
+  }
+  return t;
 }

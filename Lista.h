@@ -16,5 +16,6 @@ Posic getLast(Lista l);
 Posic getNext(Lista l, Posic p);
 Posic getPrevious(Lista l, Posic p);
 Item get(Lista l, Posic p);
+void liberaLista(Lista l);
 
 #endif

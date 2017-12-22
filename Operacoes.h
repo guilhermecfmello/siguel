@@ -4,6 +4,8 @@
 #include "Retangulo.h"
 #include "Circulo.h"
 #include "Lista.h"
+#include "Quadtree.h"
+#include "ConvexHull.h"
 
 typedef void* Forma;
 
@@ -133,6 +135,9 @@ Caso contrario, retorna 0;
 void hidListToVector();
 /*Recebe uma lista de hidrantes, transfere os dados para um vetor.
 */
-
+Tree listToQuadtree(Lista l, getX gx, getY gy);
+/*Recebe uma lista de elementos da cidade, e duas funcoes.
+Retorna uma arvore balanceada atraves do algoritmo convexhull.
+*/
 
 #endif

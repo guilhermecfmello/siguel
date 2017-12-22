@@ -1,6 +1,6 @@
 ARQUIVOS_OBJETOS = Principal.o Procedimentos.o Circulo.o Retangulo.o Lista.o\
 Escrita.o Operacoes.o Quadra.o Hidrante.o Torre.o Semaforo.o Cidade.o Formas.o\
-Pilha.o Ordenacao.o ConvexHull.o Quadtree.o
+Pilha.o Ordenacao.o ConvexHull.o Quadtree.o Conversao.o
 
 
 siguel: $(ARQUIVOS_OBJETOS)
@@ -56,6 +56,9 @@ ConvexHull.o: ConvexHull.c ConvexHull.h
 
 Quadtree.o: Quadtree.c Quadtree.h
 	gcc -c Quadtree.c -o Quadtree.o -g -pedantic -ansi
+
+Conversao.o: Conversao.c Conversao.h
+	gcc -c Conversao.c -o Conversao.o -g -pedantic -ansi
 
 clean:
 		rm -rf *.o siguel

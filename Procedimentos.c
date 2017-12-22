@@ -10,7 +10,7 @@
 Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *formaGeral, Cidade cid){
   int id, id2, cond, cond1, cond2;
   double x, y, raio, alt, larg, x2, y2;
-  double larg1, larg2, alt1, alt2, vazao;
+  double larg1, larg2, alt1, alt2, vazao, tempo;
   char *nomeSuf, *auxFree, *auxGeo;
   char cor[20], auxSuf[30], auxCor[20], cep[40];
   char op, typeF1, typeF2;
@@ -117,8 +117,9 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
       case 'h':
         fscanf(ent,"%c",&op);
         if(op=='I'){
-          fscanf(ent," %d %lf",&id, &vazao);
-          /*PAREI AQUI*/
+          fscanf(ent," %s %lf",cep , &vazao);
+          hid = procuraHidrante(cid, cep);
+          setHidranteVazao(hid,vazao);
         }
         else{
           fscanf(ent,"%lf %lf %s", &x, &y, cep);
@@ -127,14 +128,30 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
         }
         break;
       case 's':
-        fscanf(ent," %lf %lf %s", &x, &y, cep);
-        sem = createSemaforo(x,y,cep);
-        insereSemaforo(cid, sem);
+        fscanf(ent,"%c", &op);
+        if(op=='I'){
+          fscanf(ent," %s %lf", cep, &tempo);
+          sem = procuraSemaforo(cid,cep);
+          setSemaforoTempo(sem,tempo);
+        }
+        else{
+          fscanf(ent,"%lf %lf %s", &x, &y, cep);
+          sem = createSemaforo(x,y,cep);
+          insereSemaforo(cid, sem);
+        }
         break;
       case 't':
-        fscanf(ent," %lf %lf %s", &x, &y, cep);
-        tor = createTorre(x,y,cep);
-        insereTorre(cid, tor);
+        fscanf(ent,"%c",&op);
+        if(op=='I'){
+          fscanf(ent," %s %lf",cep, &raio);
+          tor = procuraTorre(cid, cep);
+          setTorreRaio(tor, raio);
+        }
+        else{
+          fscanf(ent,"%lf %lf %s", &x, &y, cep);
+          tor = createTorre(x,y,cep);
+          insereTorre(cid, tor);
+        }
         break;
       case '#':
         id = getNumQuadras(cid);
@@ -154,6 +171,8 @@ Cidade processoQry(Cidade c){
   char end[40];
   char op, op2, op3;
   Forma f1, f2, f3;
+  RecursiveSearchPtrRet ptrFuncRet;
+  RecursiveSearchPtrCirc ptrFuncCirc;
   FILE *entQry, *saiTxt, *saiTxt2;
   entQry = getArchQry(c);
   saiTxt = getArchTxtComp(c);
@@ -168,13 +187,14 @@ Cidade processoQry(Cidade c){
                   fscanf(entQry,"%c ", &op);
                   fscanf(entQry,"%lf %lf %lf %lf", &x, &y, &larg, &alt);
                   f1 = createRectangle(0,larg,alt,x,y,"blue");
-                    switch(op){
+
+                  switch(op){
                         case 'q':
-                          f2 = getQuadraRet(c,f1,&numComps);
+                          f2 = getQuadraRet(c,f1);
                           while(f2!=NULL){
                             numQuaRem++;
                             removeQuadra(c,f2);
-                            f2 = getQuadraRet(c,f1,&numComps);
+                            f2 = getQuadraRet(c,f1);
                           }
                           break;
                         case 'h':
@@ -204,13 +224,15 @@ Cidade processoQry(Cidade c){
                 fscanf(entQry,"%c ", &op);
                 fscanf(entQry,"%lf %lf %lf", &x, &y, &raio);
                 f1 = createCircle(0,raio,x,y,"blue");
+                fprintf(getArchSvg(c)," <circle cx=\"%f\" cy=\"%f\" r=\"%f\"",x,y,raio);
+                fprintf(getArchSvg(c)," fill=\"red\" stroke=\"black\"/>\n");
                 switch(op){
                   case 'q':
-                    f2 = getQuadraCirc(c,f1,&numComps);
+                    f2 = getQuadraCirc(c,f1);
                     while(f2!=NULL){
                       numQuaRem++;
                       removeQuadra(c,f2);
-                      f2 = getQuadraCirc(c,f1,&numComps);
+                      f2 = getQuadraCirc(c,f1);
                     }
                     break;
                   case 'h':

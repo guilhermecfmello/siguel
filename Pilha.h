@@ -15,15 +15,15 @@ typedef void *Pilha;
 Pilha createPilha();
 /*Cria uma pilha vazia
 */
-PosicP seeTopPilha(Pilha pil);
+PosicP topPilha(Pilha pil);
 
-PosicP seeNextTopPilha(Pilha pil);
+PosicP nextTopPilha(Pilha pil);
 
-void addPilha(Pilha pil, PosicP elemento);
+void push(Pilha pil, PosicP elemento);
 /*Adiciona um elemento no topo da pilha
 */
 
-PosicP getPilha(Pilha pil);
+PosicP pop(Pilha pil);
 /*Retorna o elemento do topo da pilha
 Retira o elemento retornado da pilha;
 */

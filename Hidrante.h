@@ -30,4 +30,9 @@ void apagaHidranteID(Hidrante hid);
 Apaga o id do hidrante
 */
 
+void setHidranteVazao(Hidrante hid, double vazao);
+/*RECEBE UM HIDRANTE E UM DOUBLE QUE REPRESENTA A SUA VAZAO EM LITROS/SEGUNDO
+CASO O HIDRANTE SEJA NULO, NAO FAZ NADA.
+*/
+
 #endif

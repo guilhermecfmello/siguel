@@ -8,12 +8,27 @@
 #include "Hidrante.h"
 #include "Retangulo.h"
 #include "Circulo.h"
+#include "Quadtree.h"
 
 /*CIDADE É FORMADA POR UM CONJUNTO DE QUADRAS, HIDRANTES, SEMAFOROS E TORRES.
 POSSUI OPERACOES PARA LIDAR COM INSERCAO, REMOCAO E BUSCA DE CADA ELEMENTO.*/
 
 typedef void* Cidade;
 
+typedef void (*RecursiveSearchPtrRet)(Posic, Rect, Tree, Posic);
+/*MODELO DE FUNCAO PARA SER PASSADA EM ALGUMAS BUSCAR NA CIDADE, NA QUAL PRECISA
+BUSCAR ELEMENTOS QUE ESTAO CONTIDOS EM DETERMINADOS RETANGULOS
+ELA RECEBE PRIMEIRO O NO INICIAL DA ARVORE, O RETANGULO DE VERIFICACAO, A ARVORE
+E O ULTIMO POSIC SERA ALTERADO COMO REFERENCIA, EH NELE QUE FICAR AO ELEMENTO, SE ESTE
+EXISTIR
+*/
+typedef void (*RecursiveSearchPtrCirc)(Posic, Rect, Tree, Posic);
+/*MODELO DE FUNCAO PARA SER PASSADA EM ALGUMAS BUSCAR NA CIDADE, NA QUAL PRECISA
+BUSCAR ELEMENTOS QUE ESTAO CONTIDOS EM DETERMINADOS CIRCULOS
+ELA RECEBE PRIMEIRO O NO INICIAL DA ARVORE, O RETANGULO DE VERIFICACAO, A ARVORE
+E O ULTIMO POSIC SERA ALTERADO COMO REFERENCIA, EH NELE QUE FICAR AO ELEMENTO, SE ESTE
+EXISTIR
+*/
 Cidade createCidade();
 /*Cria uma cidade e retorna o ponteiro para a própria
 */
@@ -90,16 +105,19 @@ int getNumQuadras(Cidade c);
 Retorna o numero de quadras que esta possui;
 */
 
-Quadra getQuadraRet(Cidade c, Rect r, int *comp);
-/*Recebe um retangulo e uma cidade.
+Quadra getQuadraRet(Cidade cid, Rect r);
+
+/*Quadra getQuadraRet(Cidade c, Rect r, int *comp);
+Recebe um retangulo e uma cidade.
 Retorna uma quadra qualquer que esteja contida no retangulo passado.
 Caso nao haja quadras, retorna NULL.
 Tambem retorna como referencia em *comp o numero de comparacoes feitas para encontrar o objeto.
 
 */
 
-Quadra getQuadraCirc(Cidade c, Circle circ, int *comp);
-/*Recebe um Circulo e uma cidade.
+Quadra getQuadraCirc(Cidade c,Circle circ);
+/*Quadra getQuadraCirc(Cidade c, Circle circ, int *comp);
+Recebe um Circulo e uma cidade.
 Retorna uma quadra qualquer que esteja contida no circulo passado.
 Caso nao haja quadras contidas, retorna NULL.
 Tambem retorna como referencia em *comp o numero de comparacoes feitas para encontrar o objeto.
@@ -276,5 +294,27 @@ FILE *getArchSvg(Cidade c);
 Retorna o seu arquivo de saida Svg.
 Retorna NULL caso o arquivo esteja fechado.
 */
-Quadra getQuadras(Cidade c);
+Quadra getQuadrasList(Cidade cid);
+
+Torre getTorresList(Cidade cid);
+
+Semaforo getSemaforosList(Cidade cid);
+
+Hidrante getHidrantesList(Cidade cid);
+
+Tree setQuadrasQuadTree(Cidade cid, Tree t);
+
+Tree setSemaforosQuadTree(Cidade cid, Tree t);
+
+Tree setHidrantesQuadTree(Cidade cid, Tree t);
+
+Tree setTorresQuadTree(Cidade cid, Tree t);
+
+/*funcao usada na "GETELEMENTRET", EH A FUNCAO RECURSIVA DE BUSCA DE
+QUADRA QUE ESTEJA DENTRO DO RETANGULO PASSADO.
+*/
+void LimpaListas(Cidade cid);
+
+
+
 #endif

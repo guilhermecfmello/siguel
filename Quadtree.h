@@ -2,7 +2,7 @@
 #define QUADTREE_H
 
 typedef void *Tree;
-typedef void *Posic;
+typedef void *PosicQ;
 typedef void *Content;
 
 /*TAD QUADTREE
@@ -11,7 +11,7 @@ COORDENADAS E REGIOS NO PLANO BIDIMENSIONAL, QUE PODEM SER:
 NORDESTE (NE), NOROESTE (NW), SUDOESTE(SW) E SUDESTE (SE).
 
 TREE: ARVORE
-POSIC: NO DA ARVORE
+PosicQ: NO DA ARVORE
 CONTENT: CONTEUDO GUARDADO PELO NO.
 */
 
@@ -20,57 +20,57 @@ Tree quadtree_create();
 */
 
 
-Posic quadtree_add(Tree t, Content c, double x, double y);
+PosicQ quadtree_add(Tree t, Content c, double x, double y);
 /*Recebe uma arvore nao nula e um conteudo.
 Adiciona a essa arvore o conteudo passado.
 */
 
-Posic quadtree_getRoot(Tree t);
+PosicQ quadtree_getRoot(Tree t);
 /*Recebe uma arvore.
 Retorna sua raiz, caso nao tenha, retorna NULL
 */
 
-Posic quadtree_getNodeNE(Tree t, Posic p);
+PosicQ quadtree_getNodeNE(Tree t, PosicQ p);
 /*Recebe uma arvore e um No dela
 Retorna o No filho que esta no quadrante NE do no passado,
 caso nao haja, retorna NULL.
 */
 
-Posic quadtree_getNodeSE(Tree t, Posic p);
+PosicQ quadtree_getNodeSE(Tree t, PosicQ p);
 /*Recebe uma arvore e um No dela
 Retorna o No filho que esta no quadrante SE do ono passado,
 caso nao haja, retorna NULL.
 */
 
-Posic quadtree_getNodeNW(Tree t, Posic p);
+PosicQ quadtree_getNodeNW(Tree t, PosicQ p);
 /*Recebe uma arvore e um No dela
-Retorna o No filho que estaPosic quadtree_add(Tree t, Content c, double x, double y);
+Retorna o No filho que estaPosicQ quadtree_add(Tree t, Content c, double x, double y);
  no quadrante NW do no passado,
 caso nao haja, retorna NULL.
 */
 
-Posic quadtree_getNodeSW(Tree t, Posic p);
+PosicQ quadtree_getNodeSW(Tree t, PosicQ p);
 /*Recebe uma arvore e um No dela
 Retorna o No filho que esta no quadrante SW do no passado,
-caso nao haja, retorna NULL.Posic quadtree_add(Tree t, Content c, double x, double y);
+caso nao haja, retorna NULL.PosicQ quadtree_add(Tree t, Content c, double x, double y);
 
 */
-Content quadtree_get(Posic p);
+Content quadtree_get(PosicQ p);
 /*Recebe uma arvore e um no,
 retorna o conteudo do no passado.
 */
 
-int quadtree_isLeaf(Tree t, Posic p);
+int quadtree_isLeaf(Tree t, PosicQ p);
 /*Recebe uma arvore e um No.
 Retorna 1 caso o no seja uma folha, e 0 caso nao seja.
 */
 
-int quadtree_remove(Tree t, Posic p);
+int quadtree_remove(Tree t, PosicQ p);
 /*Recebe uma arvore e um no.
 Remove o no passado da arvore. retorna 1 caso a operacao de certo, 0 caso contrario.
 */
 
-int quadtree_compareQuad(Posic p1, Posic p2);
+int quadtree_compareQuad(PosicQ p1, PosicQ p2);
 /*Recebe dois nos de uma arvore.
 Retorna o quadrante em que o no p2 esta em relacao ao p1, em numero inteiro.
   NW: 1;
@@ -88,14 +88,21 @@ int quadtree_getSize(Tree t);
 RETORNA O NUMERO DE ELEMENTOS QUE ELA CARREGA.
 */
 
-Posic quadtree_down(Tree t, Posic p1, Posic p2);
+PosicQ quadtree_down(Tree t, PosicQ p1, PosicQ p2);
 /*RECEBE UMA ARVORE E DOIS NOS DELA.
 RETORNA O PROXIMO NO DE P1 QUE ESTEJA EM DIRECAO AO P2.
 */
 
-int quadtree_removeWithPre(Tree t, Posic pBef, Posic p);
+int quadtree_removeWithPre(Tree t, PosicQ pBef, PosicQ p);
 /*REMOVE
 */
 
-void quadtree_print(Posic p);
+void quadtree_print(PosicQ p);
+
+void quadtree_percorre(Tree t, PosicQ p);
+/*Recebe uma arvore e um no dela.
+Retorna algum no filho que ela tenha, com a seguinte prioridade:
+1.NW 2.NE 3.SW 4.SE
+
+*/
 #endif

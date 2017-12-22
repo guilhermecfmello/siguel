@@ -50,3 +50,11 @@ void apagaHidranteID(Hidrante hid){
   hidrante *h = (hidrante*) hid;
   free(h->id);
 }
+
+void setHidranteVazao(Hidrante hid, double vazao){
+  hidrante *h;
+  if(hid!=NULL){
+    h = (hidrante*) hid;
+    h->vazao = vazao;
+  }
+}

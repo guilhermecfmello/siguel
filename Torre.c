@@ -6,6 +6,7 @@
 typedef struct _torre{
   double x;
   double y;
+  double raio;
   char *id;
 }torre;
 
@@ -17,6 +18,7 @@ Torre createTorre(double x, double y, char *id){
   t->x = x;
   t->y = y;
   t->id = newId;
+  t->raio = 0;
   return t;
 }
 
@@ -45,4 +47,12 @@ void getTorreInfos(Torre tor, double *x, double *y, char **id){
 void apagaTorreID(Torre tor){
   torre *t = (torre*) tor;
   free(t->id);
+}
+
+void setTorreRaio(Torre tor, double r){
+  torre *t;
+  if(tor!=NULL){
+    t = (torre*) tor;
+    t->raio = r;
+  }
 }

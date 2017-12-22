@@ -29,4 +29,11 @@ void apagaSemaforoID(Semaforo sem);
 /*Recebe um semaforo
 Apaga o id do semaforo
 */
+
+void setSemaforoTempo(Semaforo sem, double tempo);
+/*Recebe um semaforo e um double tempo que representa o tempo
+de de ciclo entre os estados do semaforo (verde, amarelo e vermelho).
+Seta nesse semaforo o tempo passado.
+*/
+
 #endif
