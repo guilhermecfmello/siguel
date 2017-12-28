@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Cidade.h"
+#include "Escrita.h"
 
-/*INCLUINDO DADOS PARA O SEGUNDO COMMIT*/
 typedef struct _cidade{
   Lista qua;
   Lista hid;
@@ -18,6 +18,7 @@ typedef struct _cidade{
   FILE *saiTxtComp;/*ARQUIVO DE SAIDA TXT, O NUMERO DE COMPARACOES PARA INSERCAO/REMOCAO DA LISTA*/
   FILE *entGeo;/*ARQUIVO DE ENTRADA, ARQUIVO .GEO QUE CONTEM OS ELEMENTOS DA CIDADE.*/
   FILE *entQry;/*ARQUIVO DE ENTRADA, ARQUIVO .QRY QUE CONTEM INSTRUCOES DE EXCLUSAO DE ITENS*/
+  FILE *areaTorres;/*ARQUIVO DE SAIDA, SVG QUE MOSTRA A CIDADE, A AREA DE COBERTURA DAS TORRES E SEU ENVOLTORIO CONVEXO*/
   char *cfillQuadras;
   char *cstrkQuadras;
   char *cfillHidrantes;
@@ -44,6 +45,7 @@ Cidade createCidade(){
   c->saiTxtComp = NULL;
   c->entGeo = NULL;
   c->entQry = NULL;
+  c->areaTorres = NULL;
   c->cfillQuadras = NULL;
   c->cfillHidrantes = NULL;
   c->cfillSemaforos = NULL;
@@ -215,20 +217,18 @@ void imprimeTorresSvgRecursive(Cidade c, Tree t, Posic aux, FILE *arq){
   }
 }
 
-void imprimeQuadrasSvg(Cidade c){
+void imprimeQuadrasSvg(Cidade c, FILE *arq){
     cidade *cid = (cidade*) c;
     Posic aux;
     aux = quadtree_getRoot(cid->tQua);
-    imprimeQuadrasSvgRecursive(c,cid->tQua,aux,getArchSvg(c));
+    imprimeQuadrasSvgRecursive(c,cid->tQua,aux,arq);
 }
 
-void imprimeHidrantesSvg(Cidade c){
+void imprimeHidrantesSvg(Cidade c, FILE *arq){
   cidade *cid = (cidade*) c;
   Posic aux;
   aux = quadtree_getRoot(cid->tHid);
-  if(aux==NULL)
-    printf("\n>>>AUX NULO NA CIDADE");
-  imprimeHidrantesSvgRecursive(c,cid->tHid,aux,getArchSvg(c));
+  imprimeHidrantesSvgRecursive(c,cid->tHid,aux,arq);
   /*double x, y;
   Posic aux, content;
   FILE *arq;
@@ -248,11 +248,11 @@ void imprimeHidrantesSvg(Cidade c){
   }*/
 }
 
-void imprimeSemaforosSvg(Cidade c){
+void imprimeSemaforosSvg(Cidade c, FILE *arq){
   cidade *cid = (cidade*) c;
   Posic aux;
   aux = quadtree_getRoot(cid->tSem);
-  imprimeSemaforosSvgRecursive(c,cid->tSem,aux,getArchSvg(c));
+  imprimeSemaforosSvgRecursive(c,cid->tSem,aux,arq);
   /*int i;
   double x, y;
   Posic aux;
@@ -275,11 +275,11 @@ void imprimeSemaforosSvg(Cidade c){
   }*/
 }
 
-void imprimeTorresSvg(Cidade c){
+void imprimeTorresSvg(Cidade c, FILE *arq){
   cidade *cid = (cidade*) c;
   Posic aux;
   aux = quadtree_getRoot(cid->tTor);
-  imprimeTorresSvgRecursive(c,cid->tTor,aux,getArchSvg(c));
+  imprimeTorresSvgRecursive(c,cid->tTor,aux,arq);
   /*double x, y;
   Posic aux, content;
   FILE *arq;
@@ -545,6 +545,25 @@ void procuraTorreRecursive(Posic node, Tree t, Torre *tor, char *end){
   }
 }
 
+Torre procuraTorreList(Cidade c, char *end){
+  int i, size;
+  Torre t;
+  Lista l;
+  cidade *cid;
+  cid = (cidade*) c;
+  size = length(cid->tor);
+  if(size>0){
+    l = getFirst(cid->tor);
+    do{
+      t = get(cid->tor,l);
+      if(strcmp(getTorreId(t),end)==0)
+        return t;
+      size--;
+      l = getNext(cid->tor,l);
+    }while(size>0);
+  }
+  return NULL;
+}
 
 Torre procuraTorre(Cidade c, char *end){
   Torre tor;
@@ -578,6 +597,27 @@ Posic procuraElemento(Cidade c, char *end, char *typeElement){
   }
   *typeElement = 'x';
   return NULL;
+}
+
+void openArchAreaTorres(char *patch, char *nome, char *nomeQry2, char *sufixo,Cidade c){
+    char *nomeCompleto, *nomeQry;
+    cidade *cid = (cidade*) c;
+    nomeQry = filtraNome(nomeQry2);
+    if(patch!=NULL){
+      printf("\npatch: %s nome: %s nomeQry: %s sufixo: %s", patch, nome, nomeQry, sufixo);
+      nomeCompleto = malloc(sizeof(char)*(strlen(patch)+strlen(nome)+strlen(nomeQry)+strlen(sufixo)+7));
+      sprintf(nomeCompleto,"%s%s-%s-%s.svg",patch ,nome, nomeQry,sufixo);
+      cid->areaTorres = fopen(nomeCompleto,"w");
+    }
+    else{
+      nomeCompleto = malloc(sizeof(char)*(strlen(nome)+strlen(nomeQry)+strlen(sufixo)+7));
+      sprintf(nomeCompleto,"%s-%s-%s.svg", nome, nomeQry,sufixo);
+      cid->areaTorres = fopen(nomeCompleto,"w");
+    }
+    if(cid->areaTorres==NULL)
+      printf("ERRO NA ABERTURA DO ARQUIVO DE COBERTURA DE TORRES");
+    else
+      fprintf(cid->areaTorres,"<svg xmlns=\"http://www.w3.org/2000/svg\">\n");
 }
 
 void openArchSvg(char *patch, char *nome, char *qry, Cidade c){
@@ -653,6 +693,13 @@ void openArchQry(char *patch, char *nome, Cidade c){
     cid->entQry = fopen(nomeCompleto,"r");
   }
 }
+void closeArchAreaTorres(Cidade c){
+  cidade *cid = (cidade*) c;
+  if(cid->areaTorres!=NULL){
+    fprintf(cid->areaTorres,"</svg>\n");
+    fclose(cid->areaTorres);
+  }
+}
 
 void closeArchSvg(Cidade c){
   cidade *cid = (cidade*) c;
@@ -699,6 +746,11 @@ FILE *getArchTxtComp(Cidade c){
 FILE *getArchQry(Cidade c){
   cidade *cid = (cidade*) c;
   return cid->entQry;
+}
+
+FILE *getArchAreaTorres(Cidade c){
+  cidade *cid = (cidade*) c;
+  return cid->areaTorres;
 }
 
 FILE *getArchSvg(Cidade c){
@@ -858,4 +910,8 @@ void LimpaListas(Cidade cid){
   liberaLista(c->hid);
   liberaLista(c->sem);
   liberaLista(c->tor);
+}
+Tree getTorresTree(Cidade c){
+  cidade *cid = (cidade*) c;
+  return cid->tTor;
 }

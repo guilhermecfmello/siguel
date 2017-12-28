@@ -56,19 +56,18 @@ int main(int argc,char *argv[]){
   PASSANDO DE LISTA PARA QUADTREE BALANCEADA PELO CONVEXHULL*/
   listToQuadTreeCH(cid);
   LimpaListas(cid);
-  
-  cid = processoQry(cid);
+  cid = processoQry(cid, entradaPadrao,nomeEntradaQry , dirSaida);
 
   /*IMPRESSAO DA CIDADE NO ARQUIVO QRY*/
   saiSvg = getArchSvg(cid);
   imprimeCirculos(saiSvg, f);
   imprimeRetangulos(saiSvg, f);
   imprimeRetangulosSob(saiSvg, f);
+  imprimeQuadrasSvg(cid,saiSvg);
+  imprimeSemaforosSvg(cid,saiSvg);
+  imprimeHidrantesSvg(cid,saiSvg);
+  imprimeTorresSvg(cid,saiSvg);
   saiSvg = NULL;
-  imprimeQuadrasSvg(cid);
-  imprimeSemaforosSvg(cid);
-  imprimeHidrantesSvg(cid);
-  imprimeTorresSvg(cid);
 
   /*FECHAMENTO DOS ARQUIVOS DA CIDADE*/
   closeArchSvg(cid);

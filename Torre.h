@@ -33,4 +33,5 @@ void setTorreRaio(Torre tor, double r);
 /*Recebe uma torre e um double que representa o raio de cobertura da torre.
 Seta a torre com o raio passado;
 */
+double getTorreRaio(Torre tor);
 #endif

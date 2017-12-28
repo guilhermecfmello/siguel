@@ -56,3 +56,11 @@ void setTorreRaio(Torre tor, double r){
     t->raio = r;
   }
 }
+
+double getTorreRaio(Torre tor){
+  torre *t;
+  if(tor!=NULL){
+    t = (torre*) tor;
+    return t->raio;
+  }
+}

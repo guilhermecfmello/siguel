@@ -86,17 +86,17 @@ dos semaforos e a segunda a cor da linha. As cores devem estar no padrao SVG.
 Configura as cores dos semaforos com as cores passadas.
 */
 
-void imprimeQuadrasSvg(Cidade c);
+void imprimeQuadrasSvg(Cidade c, FILE *arq);
 /*Recebe um arquivo já aberto e uma cidade,
 Imprime no arquivo as quadras da cidade.
 */
-void imprimeHidrantesSvg(Cidade c);
+void imprimeHidrantesSvg(Cidade c, FILE *arq);
 /*Recebe um arquivo já aberto e uma cidade,
 Imprime no arquivo os hidrantes da cidade*/
-void imprimeSemaforosSvg(Cidade c);
+void imprimeSemaforosSvg(Cidade c, FILE *arq);
 /*Recebe um arquivo já aberto e uma cidade,
 Imprime no arquivo os semaforos da cidade*/
-void imprimeTorresSvg(Cidade c);
+void imprimeTorresSvg(Cidade c, FILE *arq);
 /*Recebe um arquivo já aberto e uma cidade,
 Imprime no arquivo as torres da cidade*/
 
@@ -204,6 +204,8 @@ Semaforo procuraSemaforo(Cidade c, char *end);
 Retorna o semaforo da cidade que for referenciado por este endereco.
 Caso nao encontre, retorna NULL.
 */
+Torre procuraTorreList(Cidade c, char *end);
+
 Torre procuraTorre(Cidade c, char *end);
 /*Recebe uma cidade e um endereco.
 Retorna o semaforo da cidade que for referenciado por este endereco.
@@ -218,6 +220,8 @@ Caso seja um semaforo: Retorna o semaforo encontrado e o caractere 's' como refe
 Caso seja um hidrante: Retorna o hidrante encontrado e o caractere 'h' como referencia.
 Caso seja uma torre: Retorna a torre encontrada e o caractere 't' como referencia.
 */
+void openArchAreaTorres(char *patch, char *nome, char *nomeQry, char *sufixo,Cidade c);
+
 
 void openArchSvg(char *patch, char *nome, char *qry, Cidade c);
 /*Abre um arquivo de saida svg na cidade, no caminho descrito por patch, com o nome descrito por "nome"
@@ -249,6 +253,8 @@ void openArchQry(char *patch, char *nome, Cidade c);
 Caso haja um patch, concatena-o com o nome
 Caso nao haja, assume-se que o nome possui o diretorio completo
 */
+
+void closeArchAreaTorres(Cidade c);
 
 void closeArchSvg(Cidade c);
 /*Escreve no arquivo ArchSvg da cidade a tag de fechamento do Svg
@@ -289,6 +295,8 @@ Retorna o seu arquivo de entrada GEO.
 Retorna NULL caso o arquivo esteja fechado.
 */
 
+FILE *getArchAreaTorres(Cidade c);
+
 FILE *getArchSvg(Cidade c);
 /*Recebe uma cidade
 Retorna o seu arquivo de saida Svg.
@@ -315,6 +323,7 @@ QUADRA QUE ESTEJA DENTRO DO RETANGULO PASSADO.
 */
 void LimpaListas(Cidade cid);
 
+void getTorreRetRecursive(Posic node, Rect r, Tree t, Torre *tor);
 
-
+Tree getTorresTree(Cidade c);
 #endif

@@ -144,7 +144,7 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
         fscanf(ent,"%c",&op);
         if(op=='I'){
           fscanf(ent," %s %lf",cep, &raio);
-          tor = procuraTorre(cid, cep);
+          tor = procuraTorreList(cid, cep);
           setTorreRaio(tor, raio);
         }
         else{
@@ -163,11 +163,10 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
   *formaGeral = f;
   return (Cidade)cid;
 }
-
-Cidade processoQry(Cidade c){
+Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
   double x, y, larg, alt, raio;
   int numQuaRem, numComps;
-  char *nomeSvg, *nomeTxt, *auxNome;
+  char *nomeSvg, *nomeTxt, *auxNome, *busca;
   char end[40];
   char op, op2, op3;
   Forma f1, f2, f3;
@@ -289,7 +288,14 @@ Cidade processoQry(Cidade c){
             }
           }
           break;
-
+          case 'p':
+            fscanf(entQry,"%c%c ",&op,&op2);
+            if(op=='c'&&op2=='?'){
+              fscanf(entQry,"%s %lf %lf %lf %lf", end ,&x, &y, &larg, &alt);
+              f1 = createRectangle(0,larg,alt,x,y,"blue");
+              coberturaTorres(c,f1,nomeBase,nomeQry,dirBSD,end);
+              free(f1);
+            }
       }
 
 

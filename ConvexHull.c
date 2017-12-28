@@ -134,7 +134,7 @@ Pilha calculaConvexHull(vectorNode *vector, int size, Pilha ch, Pilha inside){
   Pilha aux;
   Posic p, c;
   if(size<3)
-    printf("\nEXCESSAOOOOOOOOOOOOOOO");
+    return NULL;
   if(size>2){
     push(ch,&vector[0]);
     push(ch,&vector[1]);
