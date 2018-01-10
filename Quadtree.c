@@ -15,6 +15,8 @@ typedef struct _node{
 typedef struct _head{
   int size;
   int height;
+  int compsIns;
+  int compsRem;
   node *root;
 }head;
 
@@ -22,6 +24,8 @@ Tree quadtree_create(){
   head *h = malloc(sizeof(head));
   h->size = 0;
   h->height = 0;
+  h->compsIns = 0;
+  h->compsRem = 0;
   h->root = NULL;
   return h;
 }
@@ -67,6 +71,7 @@ PosicQ quadtree_add(Tree t, Content c, double x, double y){
     while(aux!=NULL){
       down++;
       op = quadtree_compareQuad(aux,n);
+      tree->compsIns = tree->compsIns + 1;
       bef = aux;
       switch (op) {
         case 1:
@@ -215,12 +220,14 @@ int quadtree_remove(Tree t, PosicQ p){
     if(aux2!=end->ne) quadtree_recursiveAdd(t,end->ne);
     if(aux2!=end->sw) quadtree_recursiveAdd(t,end->sw);
     if(aux2!=end->se) quadtree_recursiveAdd(t,end->se);
+    h->compsRem = h->compsRem + 1;
   }
   /*SE O NO A SER REMOVIDO SEJA QUALQUER*/
   else{
     while(down!=find&&down!=NULL){
       aux = down;
       down = quadtree_down(t, down, find);
+      h->compsRem = h->compsRem + 1;
     }
     teste1 = quadtree_get(aux);
     teste2 = quadtree_get(down);
@@ -252,6 +259,15 @@ PosicQ quadtree_down(Tree t, PosicQ p1, PosicQ p2){
   return NULL;
 }
 
+int getCompsIns(Tree t1){
+  head *h = (head*) t1;
+  return h->compsIns;
+}
+
+int getCompsRem(Tree t1){
+  head *h = (head*) t1;
+  return h->compsRem;
+}
 
 /*FUNCOES PARA EXCLUIR ABAIXO - APENAS PARA TESTE*/
 void quadtree_print(PosicQ p){

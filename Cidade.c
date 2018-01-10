@@ -915,3 +915,8 @@ Tree getTorresTree(Cidade c){
   cidade *cid = (cidade*) c;
   return cid->tTor;
 }
+
+Quadra getQuadras(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->tQua;
+}

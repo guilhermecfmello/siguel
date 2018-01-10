@@ -318,9 +318,12 @@ Tree setHidrantesQuadTree(Cidade cid, Tree t);
 
 Tree setTorresQuadTree(Cidade cid, Tree t);
 
+Quadra getQuadras(Cidade cid);
 /*funcao usada na "GETELEMENTRET", EH A FUNCAO RECURSIVA DE BUSCA DE
 QUADRA QUE ESTEJA DENTRO DO RETANGULO PASSADO.
 */
+Quadra getQuadras(Cidade cid);
+
 void LimpaListas(Cidade cid);
 
 void getTorreRetRecursive(Posic node, Rect r, Tree t, Torre *tor);

@@ -8,6 +8,8 @@
 #include "Procedimentos.h"
 #include "ConvexHull.h"
 
+static int numQuaRem, numCompsRem, numQuaIns, numCompsIns;
+
 int main(int argc,char *argv[]){
   int num, size;
   char *nomeEntradaGeo, *dirSaida, *dirEntrada;

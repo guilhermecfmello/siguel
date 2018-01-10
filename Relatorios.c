@@ -9,6 +9,7 @@
 
 #define PI 3.1415926
 
+void empilhaTodasTorres(Posic node, Tree t, Pilha p);
 void empilhaTorres(Posic node, Rect r, Tree t, Pilha p);
 void imprimeTorreSvg(FILE *arq, Torre t);
 void imprimePoligonoCobertura(FILE *arq, Pilha p);
@@ -30,7 +31,9 @@ void coberturaTorres(Cidade cid, Rect r, char *nomePadrao,char *nomeQry ,char *d
   divisoes = 8;
   treeTorres = getTorresTree(cid);
   torres = createPilha();
-  empilhaTorres(quadtree_getRoot(treeTorres),r,treeTorres,torres);
+  if(r!=NULL) empilhaTorres(quadtree_getRoot(treeTorres),r,treeTorres,torres);
+  else empilhaTodasTorres(quadtree_getRoot(treeTorres),treeTorres,torres);
+
   size = getSizePilha(torres);
   openArchAreaTorres(dirBSD,nomePadrao, nomeQry, sufixo,cid);
   arq = getArchAreaTorres(cid);
@@ -92,7 +95,6 @@ void coberturaTorres(Cidade cid, Rect r, char *nomePadrao,char *nomeQry ,char *d
       /*imprimePoligonoCobertura(arq,save);*/
       size = getSizePilha(ch);
       if(size>1){
-        printf("\nSize:%d",size);
         antes = pop(ch);
         primeiro = antes;
         for(i=1;i<size;i++){
@@ -110,8 +112,26 @@ void coberturaTorres(Cidade cid, Rect r, char *nomePadrao,char *nomeQry ,char *d
         fprintf(arq," style=\"stroke:black;stroke-width:2\"/>\n");
        }
     }
+    else{
+      imprimeQuadrasSvg(cid,arq);
+      imprimeHidrantesSvg(cid,arq);
+      imprimeSemaforosSvg(cid,arq);
+      imprimeTorresSvg(cid,arq);
+    }
     closeArchAreaTorres(cid);
 
+}
+
+void empilhaTodasTorres(Posic node, Tree t, Pilha p){
+  Torre aux;
+  if(node!=NULL){
+    aux = quadtree_get(node);
+    push(p,aux);
+    empilhaTodasTorres(quadtree_getNodeNE(t,node),t,p);
+    empilhaTodasTorres(quadtree_getNodeNW(t,node),t,p);
+    empilhaTodasTorres(quadtree_getNodeSE(t,node),t,p);
+    empilhaTodasTorres(quadtree_getNodeSW(t,node),t,p);
+  }
 }
 
 void empilhaTorres(Posic node, Rect r, Tree t, Pilha p){
@@ -149,4 +169,66 @@ void imprimePoligonoCobertura(FILE *arq, Pilha p){
       ini = v;
     }
   }
+}
+
+void coberturaTorresTxt(Cidade cid, Rect r){
+  int size, i;
+  double soma1, soma2, areaTotal;
+  Tree treeTorres;
+  Pilha torres, ch;
+  vectorNode *pontos, *aux, *first, *pontosEx;
+  FILE *arq;
+  torres = createPilha();
+  ch = createPilha();
+  treeTorres = getTorresTree(cid);
+  if(r!=NULL) empilhaTorres(quadtree_getRoot(treeTorres),r,treeTorres,torres);
+  else empilhaTodasTorres(quadtree_getRoot(treeTorres),treeTorres,torres);
+  size = getSizePilha(torres);
+  if(size>2){
+    pontos = malloc(sizeof(vectorNode)*(size));
+    for(i=0;i<size;i++){
+      aux = pop(torres);
+      pontos[i].x = aux->x;
+      pontos[i].y = aux->y;
+      pontos[i].ang = -1;
+      pontos[i].ptr = NULL;
+    }
+    iniciaVetor(pontos,size);
+    calculaAngulos(pontos,size);
+    quicksort(pontos,1,size-1);
+    arrumaAngulosIguais(pontos,size);
+    calculaConvexHull(pontos,size,ch,torres);
+    size = getSizePilha(ch);
+    printf("\nSize:%d",size);
+    if(size>2){
+      pontosEx = malloc(sizeof(vectorNode)*(size+1));
+      first = pop(ch);
+      pontosEx[0].x = first->x;
+      pontosEx[0].y = first->y;
+      for(i=1;i<size;i++){
+        aux = pop(ch);
+        pontosEx[i].x = aux->x;
+        pontosEx[i].y = aux->y;
+      }
+      printf("\n>>>sizePilha(Ch)=%d",getSizePilha(ch));
+      pontosEx[i].x = first->x;
+      pontosEx[i].y = first->y;
+      soma1 = 0;
+      soma2 = 0;
+      for(i=0;i<size;i++){
+        soma1 = soma1 + pontosEx[i].x*pontosEx[i+1].y;
+        soma2 = soma2 + pontosEx[i].y*pontosEx[i+1].y;
+      }
+      areaTotal = (soma1 - soma2)/2;
+      arq = getArchTxtCons(cid);
+      fprintf(arq,"Area total de cobertura das torres selecionadas: %fm²\n",areaTotal);
+    }
+    else
+      fprintf(arq,"Area total de cobertura das torres selecionadas: 0m²\n");
+  }
+  else{
+    arq = getArchTxtCons(cid);
+    fprintf(arq,"Area total de cobertura das torres selecionadas: 0m²\n");
+  }
+
 }

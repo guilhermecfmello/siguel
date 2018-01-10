@@ -154,9 +154,6 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
         }
         break;
       case '#':
-        id = getNumQuadras(cid);
-        if(nomeEntradaQry!=NULL)fprintf(getArchTxtComp(cid),"Arquivo Geo:%s |Arquivo Qry:%s %d %d ",nomeGeo,nomeEntradaQry, id, 0);
-        else fprintf(getArchTxtComp(cid),"%s.geo %d %d ",nomeGeo,id, 0);
         break;
     }
   }
@@ -165,7 +162,7 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
 }
 Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
   double x, y, larg, alt, raio;
-  int numQuaRem, numComps;
+  int numQuaRem, compsIns, compsRem, id;
   char *nomeSvg, *nomeTxt, *auxNome, *busca;
   char end[40];
   char op, op2, op3;
@@ -177,7 +174,6 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
   saiTxt = getArchTxtComp(c);
   saiTxt2 = getArchTxtCons(c);
   numQuaRem = 0;
-  numComps = 0;
   if(entQry!=NULL){
     while(!feof(entQry)){
       fscanf(entQry,"%c", &op);
@@ -186,7 +182,6 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
                   fscanf(entQry,"%c ", &op);
                   fscanf(entQry,"%lf %lf %lf %lf", &x, &y, &larg, &alt);
                   f1 = createRectangle(0,larg,alt,x,y,"blue");
-
                   switch(op){
                         case 'q':
                           f2 = getQuadraRet(c,f1);
@@ -291,16 +286,56 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
           case 'p':
             fscanf(entQry,"%c%c ",&op,&op2);
             if(op=='c'&&op2=='?'){
-              fscanf(entQry,"%s %lf %lf %lf %lf", end ,&x, &y, &larg, &alt);
-              f1 = createRectangle(0,larg,alt,x,y,"blue");
-              coberturaTorres(c,f1,nomeBase,nomeQry,dirBSD,end);
-              free(f1);
+              fscanf(entQry,"%s%c", end,&op);
+              if(op==' '){
+                fscanf(entQry,"%lf %lf %lf %lf",&x,&y,&larg,&alt);
+                f1 = createRectangle(0,larg,alt,x,y,"blue");
+                coberturaTorres(c,f1,nomeBase,nomeQry,dirBSD,end);
+                free(f1);
+              }
+              else
+                coberturaTorres(c,NULL,nomeBase,nomeQry,dirBSD,end);
+            }
+            break;
+            case 'a':
+            fscanf(entQry,"%c%c ",&op,&op2);
+            if(op=='c'&&op2=='?'){
+              fscanf(entQry,"%s%c", end,&op);
+              if(op==' '){
+                fscanf(entQry,"%lf %lf %lf %lf", &x, &y, &larg, &alt);
+                f1 = createRectangle(0,larg,alt,x,y,"red");
+                coberturaTorresTxt(c,f1);
+                free(f1);
+              }
+              else
+                coberturaTorresTxt(c,NULL);
             }
       }
 
 
     }
+    id = getNumQuadras(c);
+    compsIns = getCompsIns(getQuadras(c));
+    compsRem = getCompsRem(getQuadras(c));
+    /*SE HOUVE ENTRADA DE ARQUIVOS QRY*/
+    if(nomeQry!=NULL){
+      fprintf(saiTxt,"Arquivo Geo:%s |Arquivo Qry:%s %d %d ",nomeBase,nomeQry, id, compsIns);
+      fprintf(saiTxt," %d %d\n", numQuaRem, getCompsRem(getQuadras(c)));
     }
-  fprintf(saiTxt," %d %d\n", numQuaRem, numComps);
-  return c;
+    else{
+      fprintf(saiTxt,"%s.geo %d %d ",nomeBase,id, 0);
+      fprintf(saiTxt," %d %d\n", numQuaRem, getCompsRem(getQuadras(c)));
+    }
+    /*SE NAO HOUVE O PROCESSAMENTO DE UM ARQUIVO QRY*/
+    }
+    id = getNumQuadras(c);
+    if(nomeQry!=NULL){
+      fprintf(saiTxt,"Arquivo Geo:%s |Arquivo Qry:%s %d %d ",nomeBase,nomeQry, id, compsIns);
+      fprintf(saiTxt," 0 0\n");
+    }
+    else{
+      fprintf(saiTxt,"%s.geo %d %d ",nomeBase,id, 0);
+      fprintf(saiTxt," 0 0\n");
+    }
+    return c;
 }

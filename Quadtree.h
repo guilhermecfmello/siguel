@@ -103,6 +103,14 @@ void quadtree_percorre(Tree t, PosicQ p);
 /*Recebe uma arvore e um no dela.
 Retorna algum no filho que ela tenha, com a seguinte prioridade:
 1.NW 2.NE 3.SW 4.SE
+*/
 
+int getCompsIns(Tree t1);
+/*Recebe uma arvore não nula,
+retorna o numero de comparacoes feitas para inserir todos os elementos dela.
+*/
+int getCompsRem(Tree t1);
+/*Recebe uma arvore não nula,
+retorna o numero de comparacoes feitas para remover os elementos selecionados.
 */
 #endif
