@@ -9,6 +9,7 @@
 #include "Retangulo.h"
 #include "Circulo.h"
 #include "Quadtree.h"
+#include "Dicionario.h"
 
 /*CIDADE É FORMADA POR UM CONJUNTO DE QUADRAS, HIDRANTES, SEMAFOROS E TORRES.
 POSSUI OPERACOES PARA LIDAR COM INSERCAO, REMOCAO E BUSCA DE CADA ELEMENTO.*/
@@ -329,4 +330,29 @@ void LimpaListas(Cidade cid);
 void getTorreRetRecursive(Posic node, Rect r, Tree t, Torre *tor);
 
 Tree getTorresTree(Cidade c);
+
+Dicionario getDicionario(Cidade cid);
+
+FILE *openArchPm(Cidade cid, char *patch, char *name);
+
+void closeArchPm(Cidade cid);
+
+FILE *openArchEc(Cidade cid, char *patch, char *name);
+
+FILE *openArchTm(Cidade cid, char *patch, char *name);
+
+void closeArchEc(Cidade cid);
+
+void closeArchTm(Cidade cid);
+
+FILE *getArchPm(Cidade cid);
+
+FILE *getArchTm(Cidade cid);
+
+FILE *getArchEc(Cidade cid);
+
+void inserePessoa(Cidade cid, Pessoa p);
+
+void insereEstabelecimento(Cidade cid, Estab est);
+
 #endif

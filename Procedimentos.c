@@ -339,3 +339,25 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
     }
     return c;
 }
+
+Cidade processoPm(Cidade cid){
+  char cpf[10], nome[30], sobrenome[30], sexo, nasc[11];
+  char op;
+  FILE *arq;
+  Pessoa pes;
+  arq = getArchPm(cid);
+  while(!feof(arq)){
+    fscanf(arq,"%c ", &op);
+    switch(op){
+      case 'p':
+        fscanf(arq,"%s %s %s %c %s",cpf,nome,sobrenome,&sexo,nasc);
+        pes = pessoa_create(cpf,nome,sobrenome,sexo,nasc);
+        
+        break;
+      case 'm':
+        break;
+      default:
+        break;
+    }
+  }
+}

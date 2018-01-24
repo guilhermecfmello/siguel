@@ -35,7 +35,6 @@ Cidade listToQuadTreeCH(Cidade cid){
   Tree newTree;
   vectorNode *v;
   newTree = NULL;
-  printf("\nCOMECOU CONVERSAO\n");
 
   gx = &getQuadraX;
   gy = &getQuadraY;
@@ -43,7 +42,6 @@ Cidade listToQuadTreeCH(Cidade cid){
   newTree = criaQuadTree(ch);
   /*newTree = listToQuadtree(getQuadrasList(cid), gx,gy);*/
   setQuadrasQuadTree(cid,newTree);
-  printf("\nPASSOU QUADRA\n");
 
 
   gx = &getSemaforoX;
@@ -51,20 +49,17 @@ Cidade listToQuadTreeCH(Cidade cid){
   ch = convexHull(getSemaforosList(cid),gx,gy);
   newTree = criaQuadTree(ch);
   setSemaforosQuadTree(cid, newTree);
-  printf("PASSOU SEMAFORO\n");
 
   gx = &getHidranteX;
   gy = &getHidranteY;
   ch = convexHull(getHidrantesList(cid),gx,gy);
   newTree = criaQuadTree(ch);
   setHidrantesQuadTree(cid,newTree);
-  printf("PASSOU HIDRANTE\n");
 
   gx = &getTorreX;
   gy = &getTorreY;
   ch = convexHull(getTorresList(cid), gx, gy);
   newTree = criaQuadTree(ch);
   setTorresQuadTree(cid, newTree);
-  printf("PASSOU TORRES\n");
   return cid;
 }

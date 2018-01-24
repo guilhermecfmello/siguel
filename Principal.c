@@ -14,6 +14,7 @@ int main(int argc,char *argv[]){
   int num, size;
   char *nomeEntradaGeo, *dirSaida, *dirEntrada;
   char *aux, *entradaPadrao, *nomeEntradaQry, *nomeBaseQry;
+  char *nomePm, *nomeEc, *nomeTm;
   int acc;
   Quadra q;
   getX gx;
@@ -28,8 +29,13 @@ int main(int argc,char *argv[]){
   dirSaida = pegaParametro(argc,argv,"-o"); /*Obrigatorio*/
   dirEntrada = pegaParametro(argc,argv,"-e");
   nomeEntradaQry = pegaParametro(argc,argv,"-q");
+  nomePm = pegaParametro(argc,argv,"-pm");
+  nomeTm = pegaParametro(argc,argv,"-tm");
+  nomeEc = pegaParametro(argc,argv,"-ec");
   acc = parametroAcc(argc, argv);
   cid = createCidade();
+  if(parametroId(argc,argv))
+    printf("\nAluno Guilherme Mello\n");
 
   /*CRIACAO DOS NOMES PARA ABERTURA DE ARQUIVOS*/
   entradaPadrao = removeExtensao(nomeEntradaGeo);
@@ -49,6 +55,10 @@ int main(int argc,char *argv[]){
   openArchTxtCons(dirSaida,entradaPadrao,nomeBaseQry,cid);
   openArchGeo(dirEntrada,nomeEntradaGeo,cid);
   openArchQry(dirEntrada,nomeEntradaQry,cid);
+  openArchPm(cid,dirEntrada,nomePm);
+  openArchTm(cid,dirEntrada,nomeTm);
+  openArchEc(cid,dirEntrada,nomeEc);
+
   if(acc) openArchTxtComp(dirSaida,"resumo","a",cid);
   else openArchTxtComp(dirSaida,"resumo","w",cid);
 
@@ -59,7 +69,7 @@ int main(int argc,char *argv[]){
   listToQuadTreeCH(cid);
   LimpaListas(cid);
   cid = processoQry(cid, entradaPadrao,nomeEntradaQry , dirSaida);
-
+  cid = processoPm(cid);
   /*IMPRESSAO DA CIDADE NO ARQUIVO QRY*/
   saiSvg = getArchSvg(cid);
   imprimeCirculos(saiSvg, f);
@@ -77,6 +87,9 @@ int main(int argc,char *argv[]){
   closeArchGeo(cid);
   closeArchTxtCons(cid);
   closeArchTxtComp(cid);
+  closeArchPm(cid);
+  closeArchTm(cid);
+  closeArchEc(cid);
 
 
 

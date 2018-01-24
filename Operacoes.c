@@ -7,6 +7,15 @@
 #include "Circulo.h"
 #include "Lista.h"
 
+int parametroId(int argc, char *argv[]){
+  int i, j;
+  for(i=1;i<argc;i++){
+    if(strcmp(argv[i],"-id")==0)
+      return 1;
+  }
+  return 0;
+}
+
 int parametroAcc(int argc, char *argv[]){
   int i, j;
   for(i=1;i<argc;i++){

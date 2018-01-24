@@ -199,7 +199,6 @@ void coberturaTorresTxt(Cidade cid, Rect r){
     arrumaAngulosIguais(pontos,size);
     calculaConvexHull(pontos,size,ch,torres);
     size = getSizePilha(ch);
-    printf("\nSize:%d",size);
     if(size>2){
       pontosEx = malloc(sizeof(vectorNode)*(size+1));
       first = pop(ch);
@@ -210,7 +209,6 @@ void coberturaTorresTxt(Cidade cid, Rect r){
         pontosEx[i].x = aux->x;
         pontosEx[i].y = aux->y;
       }
-      printf("\n>>>sizePilha(Ch)=%d",getSizePilha(ch));
       pontosEx[i].x = first->x;
       pontosEx[i].y = first->y;
       soma1 = 0;

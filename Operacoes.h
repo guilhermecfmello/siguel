@@ -9,6 +9,8 @@
 
 typedef void* Forma;
 
+int parametroId(int argc, char *argv[]);
+
 int parametroAcc(int argc, char *argv[]);
 
 char *pegaParametro(int argc,  char *argv[], char *parametro);

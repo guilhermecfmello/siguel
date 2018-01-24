@@ -3,12 +3,14 @@
 #include <string.h>
 #include "Cidade.h"
 #include "Escrita.h"
+#include "Dicionario.h"
 
 typedef struct _cidade{
   Lista qua;
   Lista hid;
   Lista sem;
   Lista tor;
+  Dicionario dici;
   Tree tQua;/*Quadtree com os elementos da cidade*/
   Tree tHid;/*Quadtree com os elementos da cidade*/
   Tree tSem;/*Quadtree com os elementos da cidade*/
@@ -18,6 +20,9 @@ typedef struct _cidade{
   FILE *saiTxtComp;/*ARQUIVO DE SAIDA TXT, O NUMERO DE COMPARACOES PARA INSERCAO/REMOCAO DA LISTA*/
   FILE *entGeo;/*ARQUIVO DE ENTRADA, ARQUIVO .GEO QUE CONTEM OS ELEMENTOS DA CIDADE.*/
   FILE *entQry;/*ARQUIVO DE ENTRADA, ARQUIVO .QRY QUE CONTEM INSTRUCOES DE EXCLUSAO DE ITENS*/
+  FILE *entPm;/*ARQUIVO DE ENTRADA, LEITURA E CRIACAO DE PESSOAS*/
+  FILE *entTm;/*ARQUIVO DE ENTRADA, DETERMINAR PESSOAS E SUAS RESPECTIVAS LINHAS MOVEIS*/
+  FILE *entEc;/*ARQUIVO DE ENTRADA, LEITURA E CRIACAO DE ESTABELECIMENTOS COMERCIAIS*/
   FILE *areaTorres;/*ARQUIVO DE SAIDA, SVG QUE MOSTRA A CIDADE, A AREA DE COBERTURA DAS TORRES E SEU ENVOLTORIO CONVEXO*/
   char *cfillQuadras;
   char *cstrkQuadras;
@@ -40,6 +45,7 @@ Cidade createCidade(){
   c->tHid = quadtree_create();
   c->tSem = quadtree_create();
   c->tTor = quadtree_create();
+  c->dici = dicionario_create();
   c->saiSvg = NULL;
   c->saiTxtConsultas = NULL;
   c->saiTxtComp = NULL;
@@ -604,7 +610,6 @@ void openArchAreaTorres(char *patch, char *nome, char *nomeQry2, char *sufixo,Ci
     cidade *cid = (cidade*) c;
     nomeQry = filtraNome(nomeQry2);
     if(patch!=NULL){
-      printf("\npatch: %s nome: %s nomeQry: %s sufixo: %s", patch, nome, nomeQry, sufixo);
       nomeCompleto = malloc(sizeof(char)*(strlen(patch)+strlen(nome)+strlen(nomeQry)+strlen(sufixo)+7));
       sprintf(nomeCompleto,"%s%s-%s-%s.svg",patch ,nome, nomeQry,sufixo);
       cid->areaTorres = fopen(nomeCompleto,"w");
@@ -919,4 +924,117 @@ Tree getTorresTree(Cidade c){
 Quadra getQuadras(Cidade cid){
   cidade *c = (cidade*) cid;
   return c->tQua;
+}
+
+Dicionario getDicionario(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->dici;
+}
+
+FILE *openArchPm(Cidade cid, char *patch, char *name){
+  char *nomeCompleto;
+  int sizePatch, sizeName;
+  cidade *c = (cidade*) cid;
+  sizePatch = 0;
+  if(patch!=NULL)
+    sizePatch = strlen(patch);
+  sizeName = strlen(name);
+  nomeCompleto = malloc(sizeof(char)*(sizePatch+sizeName+1));
+  if(patch!=NULL)
+    sprintf(nomeCompleto,"%s%s",patch,name);
+  else
+    sprintf(nomeCompleto,"%s",name);
+  c->entPm = fopen(nomeCompleto,"r");
+  free(nomeCompleto);
+  if(c->entPm==NULL){
+    printf("Erro na abertura do arquivo PM\n");
+    return NULL;
+  }
+  else
+    return c->entPm;
+}
+
+void closeArchPm(Cidade cid){
+  cidade *c = (cidade*) cid;
+  if(c->entPm!=NULL)
+    fclose(c->entPm);
+}
+
+FILE *openArchEc(Cidade cid, char *patch, char *name){
+  char *nomeCompleto;
+  int sizePatch, sizeName;
+  cidade *c = (cidade*) cid;
+  sizePatch = 0;
+  if(patch!=NULL)
+    sizePatch = strlen(patch);
+  sizeName = strlen(name);
+  nomeCompleto = malloc(sizeof(char)*(sizePatch+sizeName+1));
+  if(patch!=NULL)
+    sprintf(nomeCompleto,"%s%s",patch,name);
+  else
+    sprintf(nomeCompleto,"%s",name);
+  c->entEc = fopen(nomeCompleto,"r");
+  free(nomeCompleto);
+  if(c->entEc==NULL){
+    printf("Erro na abertura do arquivo EC\n");
+    return NULL;
+  }
+  else
+    return c->entEc;
+}
+
+FILE *openArchTm(Cidade cid, char *patch, char *name){
+  char *nomeCompleto;
+  int sizePatch, sizeName;
+  cidade *c = (cidade*) cid;
+  sizePatch = 0;
+  if(patch!=NULL)
+    sizePatch = strlen(patch);
+  sizeName = strlen(name);
+  nomeCompleto = malloc(sizeof(char)*(sizePatch+sizeName+1));
+  if(patch!=NULL)
+    sprintf(nomeCompleto,"%s%s",patch,name);
+  else
+    sprintf(nomeCompleto,"%s",name);
+  c->entTm = fopen(nomeCompleto,"r");
+  free(nomeCompleto);
+  if(c->entTm==NULL){
+    printf("Erro na abertura do arquivo TM\n");
+    return NULL;
+  }
+  else
+    return c->entTm;
+}
+
+void closeArchEc(Cidade cid){
+  cidade *c = (cidade*) cid;
+  if(c->entEc!=NULL)
+    fclose(c->entEc);
+}
+
+void closeArchTm(Cidade cid){
+  cidade *c = (cidade*) cid;
+  if(c->entTm!=NULL)
+    fclose(c->entTm);
+}
+
+FILE *getArchPm(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->entPm;
+}
+
+FILE *getArchTm(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->entTm;
+}
+
+FILE *getArchEc(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->entEc;
+}
+
+void inserePessoa(Cidade cid, Pessoa p){
+  cidade *c = (cidade*) cid;
+  dicio_insere_pessoaCpf(c->dici,p);
+  dicio_insere_pessoaNumCel(c->dici,p);
 }
