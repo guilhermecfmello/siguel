@@ -17,13 +17,15 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
   void* aux;
   FILE *saiSvgSuf, *ent, *saiTxtCons;
   Forma f1, f2;
+  Dicionario dici;
+  Formas f = createFormas();
   Rect ret = NULL;
   Circle circ = NULL;
   Quadra qua = NULL;
   Hidrante hid = NULL;
   Semaforo sem = NULL;
   Torre tor = NULL;
-  Formas f = createFormas();
+  dici = getDicionario(cid);
   ent = getArchGeo(cid);
   saiTxtCons = getArchTxtCons(cid);
   while(!feof(ent)){
@@ -134,6 +136,11 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
           sem = procuraSemaforo(cid,cep);
           setSemaforoTempo(sem,tempo);
         }
+        else if(op=='u'){
+          fscanf(ent,"%s ", cep);
+          tor = procuraTorreList(cid,cep);
+          dicio_insere_torre_sercomtuel(dici,tor);
+        }
         else{
           fscanf(ent,"%lf %lf %s", &x, &y, cep);
           sem = createSemaforo(x,y,cep);
@@ -155,11 +162,20 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
         break;
       case '#':
         break;
+      case 'u':
+        fscanf(ent,"%c ",&op);
+        if(op=='m'){
+          fscanf(ent,"%s ", cep);
+          tor = procuraTorreList(cid,cep);
+          dicio_insere_torre_uelmobile(dici,tor);
+        }
+        break;
     }
   }
   *formaGeral = f;
   return (Cidade)cid;
 }
+
 Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
   double x, y, larg, alt, raio;
   int numQuaRem, compsIns, compsRem, id;
@@ -341,23 +357,93 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
 }
 
 Cidade processoPm(Cidade cid){
-  char cpf[10], nome[30], sobrenome[30], sexo, nasc[11];
+  int num;
+  char cpf[20], nome[60], sobrenome[60], sexo, nasc[11];
+  char cep[20], face[10], comp[30];
   char op;
   FILE *arq;
+  RegH aux;
   Pessoa pes;
+  Dicionario dici;
+  dici = getDicionario(cid);
   arq = getArchPm(cid);
   while(!feof(arq)){
     fscanf(arq,"%c ", &op);
     switch(op){
       case 'p':
-        fscanf(arq,"%s %s %s %c %s",cpf,nome,sobrenome,&sexo,nasc);
+        fscanf(arq,"%s %s %s %c %s ",cpf,nome,sobrenome,&sexo,nasc);
         pes = pessoa_create(cpf,nome,sobrenome,sexo,nasc);
-        
+        dicio_insere_pessoaCpf(dici,pes);
         break;
       case 'm':
+        fscanf(arq,"%s %s %s %d %s ", cpf, cep, face,&num,comp);
+        pes = dicio_searchPessoa_cpf(dici,cpf);
+        /*printf("\nnum: %d", pessoa_get_num(pes));*/
+        pessoa_set_num(pes, num);
+        pessoa_set_comp(pes, comp);
+        pessoa_set_cep(pes, cep);
+        pessoa_set_face(pes, face);
+        break;
+      default:
+        printf("Erro no comando do arquivo PM\n");
+        break;
+    }
+  }
+  return cid;
+}
+
+Cidade processoTm(Cidade cid){
+  char op[10], cpf[20], numcel[20];
+  Dicionario dici;
+  Pessoa pes;
+  Telefone tel;
+  FILE *arq;
+  dici = getDicionario(cid);
+  arq = getArchTm(cid);
+  while(!feof(arq)){
+    fscanf(arq,"%s ",op);
+    fscanf(arq,"%s %s", cpf, numcel);
+    pes = dicio_searchPessoa_cpf(dici, cpf);
+    tel = telefone_create(numcel,NULL);
+    if(pes!=NULL){
+      pessoa_set_tel(pes,tel);
+      dicio_insere_pessoaNumCel(dici,pes);
+    }
+    if(strcmp(op,"su")==0)
+      dicio_insere_cpf_sercomtuel(dici,cpf,numcel);
+    else if(strcmp(op,"um")==0)
+      dicio_insere_cpf_uelmobile(dici,cpf,numcel);
+    else
+      printf("Erro na leitura de TM\n");
+  }
+  return cid;
+}
+
+Cidade processoEc(Cidade cid){
+  char op, face;
+  char codt[30], desc[100];
+  char cep[20], cnpj[20], nome[30];
+  int num;
+  FILE *arq;
+  Dicionario dici;
+  Estab est;
+  dici = getDicionario(cid);
+  arq = getArchEc(cid);
+  while(!feof(arq)){
+    fscanf(arq,"%c ", &op);
+    switch(op){
+      case 't':
+        fscanf(arq,"%s %s", codt, desc);
+        dicio_insere_Desctype(dici, desc, codt);
+        break;
+      case 'e':
+        fscanf(arq,"%s %s %s %d %s %s", codt, cep, &face, &num, cnpj, nome);
+        est = estab_create(cnpj,nome,codt,cep,face,num);
+        dicio_insere_estType(dici,est,codt);
         break;
       default:
         break;
     }
   }
+  return cid;
 }

@@ -55,9 +55,12 @@ int main(int argc,char *argv[]){
   openArchTxtCons(dirSaida,entradaPadrao,nomeBaseQry,cid);
   openArchGeo(dirEntrada,nomeEntradaGeo,cid);
   openArchQry(dirEntrada,nomeEntradaQry,cid);
-  openArchPm(cid,dirEntrada,nomePm);
-  openArchTm(cid,dirEntrada,nomeTm);
-  openArchEc(cid,dirEntrada,nomeEc);
+  if(nomeEc!=NULL)
+    openArchEc(cid,dirEntrada,nomeEc);
+  if(nomePm!=NULL)
+    openArchPm(cid,dirEntrada,nomePm);
+  if(nomeTm!=NULL)
+    openArchTm(cid,dirEntrada,nomeTm);
 
   if(acc) openArchTxtComp(dirSaida,"resumo","a",cid);
   else openArchTxtComp(dirSaida,"resumo","w",cid);
@@ -67,9 +70,14 @@ int main(int argc,char *argv[]){
   /*MUDANCA DA ESTRUTURA DE DADOS DOS ELEMENTOS DA CIDADE
   PASSANDO DE LISTA PARA QUADTREE BALANCEADA PELO CONVEXHULL*/
   listToQuadTreeCH(cid);
-  LimpaListas(cid);
+  if(nomeEc!=NULL)
+  cid = processoEc(cid);
   cid = processoQry(cid, entradaPadrao,nomeEntradaQry , dirSaida);
-  cid = processoPm(cid);
+  if(nomePm!=NULL)
+    cid = processoPm(cid);
+  if(nomeTm!=NULL)
+    cid = processoTm(cid);
+  /*LimpaListas(cid);*/
   /*IMPRESSAO DA CIDADE NO ARQUIVO QRY*/
   saiSvg = getArchSvg(cid);
   imprimeCirculos(saiSvg, f);
@@ -79,6 +87,8 @@ int main(int argc,char *argv[]){
   imprimeSemaforosSvg(cid,saiSvg);
   imprimeHidrantesSvg(cid,saiSvg);
   imprimeTorresSvg(cid,saiSvg);
+  imprimePessoasSvg(cid,saiSvg);
+  imprimeEstabelecimentos(cid,saiSvg);
   saiSvg = NULL;
 
   /*FECHAMENTO DOS ARQUIVOS DA CIDADE*/

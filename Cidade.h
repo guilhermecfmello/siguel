@@ -2,7 +2,6 @@
 #define CIDADE__H
 #include "Quadra.h"
 #include "Lista.h"
-#include "Quadra.h"
 #include "Semaforo.h"
 #include "Torre.h"
 #include "Hidrante.h"
@@ -100,6 +99,14 @@ Imprime no arquivo os semaforos da cidade*/
 void imprimeTorresSvg(Cidade c, FILE *arq);
 /*Recebe um arquivo já aberto e uma cidade,
 Imprime no arquivo as torres da cidade*/
+void imprimePessoasSvg(Cidade cid, FILE *arq);
+
+void imprimeEstabelecimentosSvg(Cidade cid, FILE *arq);
+
+void imprimePessoaSvg(Cidade cid, Pessoa p, FILE *arq);
+
+void imprimeEstabelecimentoSvg(Cidade cid, FILE *arq);
+
 
 int getNumQuadras(Cidade c);
 /*Recebe uma cidade
@@ -209,7 +216,7 @@ Torre procuraTorreList(Cidade c, char *end);
 
 Torre procuraTorre(Cidade c, char *end);
 /*Recebe uma cidade e um endereco.
-Retorna o semaforo da cidade que for referenciado por este endereco.
+Retorna a torre da cidade que for referenciado por este endereco.
 Caso nao encontre, retorna NULL.
 */
 Posic procuraElemento(Cidade c, char *end, char *typeElement);
@@ -353,6 +360,15 @@ FILE *getArchEc(Cidade cid);
 
 void inserePessoa(Cidade cid, Pessoa p);
 
-void insereEstabelecimento(Cidade cid, Estab est);
+void insereDescEstab(Cidade cid, char *type,char *desc);
+
+void insereQuadrasHash(Cidade cid);
+
+void insereRadiobaseNumcel(Cidade cid);
+
+void imprimeEstabelecimentos(Cidade cid, FILE *arq);
+
+void imprimeEstabelecimento(Cidade cid, Estab est, FILE *arq);
+
 
 #endif

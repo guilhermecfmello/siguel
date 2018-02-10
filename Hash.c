@@ -14,6 +14,15 @@ typedef struct _reg{
   char* key;
 }reg;
 
+Lista hash_get_position(Hash ha, int position){
+  hash *h = (hash*) ha;
+  return h->vector[position];
+}
+
+int hash_get_size(Hash ha){
+  hash *h = (hash*) ha;
+  return h->size;
+}
 
 PosicH hash_search_List(Hash ha, char* key){
   int ind;
@@ -63,7 +72,7 @@ RegH hash_search(Hash ha, char* key){
   p = hash_search_List(ha,key);
   if(p!=NULL){
     r = (reg*) get(NULL,p);
-    return r;
+    return r->content;
   }
   else
     return NULL;
@@ -122,6 +131,11 @@ Hash createHash(int size){
   for(i=0;i<size;i++)
     h->vector[i] = createList();
   return h;
+}
+
+PosicH hash_get_reg(RegH node){
+  reg *r = (reg*) node;
+  return r->content;
 }
 
 /*FUNCOES TESTE, EXCLUI-LAS ANTES DE ENTREGAR O TRABALHO*/

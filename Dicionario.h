@@ -24,13 +24,13 @@ Hash getHash(Dicionario di, char *type);
 /*Consulta do dicionario*/
 
 void dicio_insere_pessoaCpf(Dicionario di, Pessoa p);
-/*Insere a pessoa P na tabela hash usando seu cpf como key.*/
+/*Insere a pessoa P na tabela hash usando uma copia do seu cpf como key.*/
 
 void dicio_insere_pessoaNumCel(Dicionario di, Pessoa p);
 /*A pessoa deve ter um telefone.
 Insere a pessoa p na hash, usando seu telefone como key*/
 
-void dicio_insere_radiobaseNumCel(Dicionario di, Torre tor, char *num);
+void dicio_insere_radiobaseNumCel(Dicionario di, char *torre, char *num);
 /*Dado um numero de celular, adiciona na Hash a radiobase usando uma copia deste
 numero como chave.*/
 
@@ -65,7 +65,25 @@ Quadra dicio_search_Quadra_cep(Dicionario di, char *key);
 /*Busca na hash de quadras, utilizando o cep como chave. Retorna NULL caso nao
 encontre*/
 
-/*==========Implementar caso de tempo==========*/
+void dicio_insere_cpf_sercomtuel(Dicionario di, char *cpf, char *num);
+/*Define o cpf passado como cliente da sercomtuel*/
+void dicio_insere_cpf_uelmobile(Dicionario di, char *cpf, char *num);
+/*Define o cpf passado como cliente da uelMobile*/
+char *dicio_search_cpf_sercomtuel(Dicionario di, char *num);
+/*Busca na hash da sercomtuel o cpf do cliente de numero num.*/
+char *dicio_search_cpf_uelmobile(Dicionario di, char *num);
+/*Busca na hash da uelmobile o cpf do cliente de numero num.*/
+void dicio_insere_torre_sercomtuel(Dicionario di, Torre tor);
+/*Insere a torre tor na hash de torres da sercomtuel, usando uma copia do seu ID como key*/
+void dicio_insere_torre_uelmobile(Dicionario di, Torre tor);
+/*Insere a torre tor na hash de torres da uelmobile, usando uma copia do seu ID como key*/
+
+Torre dicio_search_torre_sercomtuel(Dicionario di, char *id);
+/*Busca na hash de torres da sercomtuel usando o id passado como chave*/
+Torre dicio_search_torre_uelmobile(Dicionario di, char *id);
+/*Busca na hash de torres da uelmobile usando o id passado como chave*/
+
+/*==========Implementar se der tempo==========*/
 
 void dicio_libera(Dicionario di, char *hash);
 /*Libera a memoria utilizada pela hash*/

@@ -11,7 +11,7 @@ typedef struct _pessoa{
   char *nascimento;
   char *cep;
   char *face;
-  char *num;
+  int num;
   char *comp;
   Telefone tel;
 }pessoa;
@@ -21,7 +21,7 @@ Pessoa pessoa_create(char *cpf, char *nome, char *sobrenome,char sexo, char *nas
   p = malloc(sizeof(pessoa));
   p->cpf = malloc(sizeof(char)*(strlen(cpf)+1));
   p->nome = malloc(sizeof(char)*(strlen(nome)+1));
-  p->sobrenome = malloc(sizeof(char)*(strlen(nome)+1));
+  p->sobrenome = malloc(sizeof(char)*(strlen(sobrenome)+1));
   p->nascimento = malloc(sizeof(char)*(strlen(nasc)+1));
   strcpy(p->cpf,cpf);
   strcpy(p->nome,nome);
@@ -31,7 +31,7 @@ Pessoa pessoa_create(char *cpf, char *nome, char *sobrenome,char sexo, char *nas
   p->tel = NULL;
   p->cep = NULL;
   p->face = NULL;
-  p->num = NULL;
+  p->num = 0;
   p->comp = NULL;
   return p;
 }
@@ -81,7 +81,7 @@ char *pessoa_get_face(Pessoa pes){
   return p->face;
 }
 
-char *pessoa_get_num(Pessoa pes){
+int pessoa_get_num(Pessoa pes){
   pessoa *p = (pessoa*) pes;
   return p->num;
 }
@@ -95,7 +95,7 @@ char *pessoa_get_comp(Pessoa pes){
 void pessoa_set_cep(Pessoa pes, char *set){
   pessoa *p = (pessoa*) pes;
   if(set!=NULL){
-    p->cep=malloc(sizeof(char)*(strlen(set)+1));
+    p->cep = malloc(sizeof(char)*(strlen(set)+1));
     strcpy(p->cep,set);
   }
   else
@@ -112,14 +112,9 @@ void pessoa_set_face(Pessoa pes, char *set){
     printf("Erro ao setar face na pessoa %s\n", p->nome);
 }
 
-void pessoa_set_num(Pessoa pes, char *set){
+void pessoa_set_num(Pessoa pes, int set){
   pessoa *p = (pessoa*) pes;
-  if(set!=NULL){
-    p->num=malloc(sizeof(char)*(strlen(set)+1));
-    strcpy(p->num,set);
-  }
-  else
-    printf("Erro ao setar num na pessoa %s\n", p->nome);
+  p->num = set;
 }
 
 void pessoa_set_comp(Pessoa pes, char *set){

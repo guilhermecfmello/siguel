@@ -1,6 +1,7 @@
 #ifndef HASH__H
 #define HASH__H
 
+
 typedef void *Hash;
 typedef void* RegH;
 typedef void* PosicH;
@@ -23,5 +24,11 @@ void imprimeTeste(Hash ha);
 char *getKey(Hash ha, RegH re);
 
 char *getContent(Hash ha, RegH re);
+
+int hash_get_size(Hash ha);
+
+RegH hash_get_position(Hash ha, int position);
+
+PosicH hash_get_reg(RegH);
 
 #endif

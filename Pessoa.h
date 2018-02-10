@@ -22,7 +22,7 @@ char *pessoa_get_cep(Pessoa pes);
 
 char *pessoa_get_face(Pessoa pes);
 
-char *pessoa_get_num(Pessoa pes);
+int pessoa_get_num(Pessoa pes);
 
 char *pessoa_get_comp(Pessoa pes);
 
@@ -30,7 +30,7 @@ void pessoa_set_cep(Pessoa pes, char *cep);
 
 void pessoa_set_face(Pessoa pes, char *face);
 
-void pessoa_set_num(Pessoa pes, char *num);
+void pessoa_set_num(Pessoa pes, int num);
 
 void pessoa_set_comp(Pessoa pes, char *comp);
 

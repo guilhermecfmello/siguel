@@ -11,9 +11,12 @@ typedef struct _telefone{
 Telefone telefone_create(char *num, char *radiobase){
   telefone *t = malloc(sizeof(telefone));
   t->num = malloc(sizeof(char)*(strlen(num)+1));
-  t->radiobase = malloc(sizeof(char)*(strlen(radiobase)+1));
+  if(radiobase!=NULL){
+    t->radiobase = malloc(sizeof(char)*(strlen(radiobase)+1));
+    strcpy(t->radiobase,radiobase);
+  }
+  else radiobase = NULL;
   strcpy(t->num,num);
-  strcpy(t->radiobase,radiobase);
   return t;
 }
 

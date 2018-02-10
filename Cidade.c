@@ -4,6 +4,7 @@
 #include "Cidade.h"
 #include "Escrita.h"
 #include "Dicionario.h"
+#include "Hash.h"
 
 typedef struct _cidade{
   Lista qua;
@@ -51,6 +52,9 @@ Cidade createCidade(){
   c->saiTxtComp = NULL;
   c->entGeo = NULL;
   c->entQry = NULL;
+  c->entPm = NULL;
+  c->entTm = NULL;
+  c->entEc = NULL;
   c->areaTorres = NULL;
   c->cfillQuadras = NULL;
   c->cfillHidrantes = NULL;
@@ -1033,8 +1037,163 @@ FILE *getArchEc(Cidade cid){
   return c->entEc;
 }
 
-void inserePessoa(Cidade cid, Pessoa p){
+void imprimePessoaSvg(Cidade cid, Pessoa p, FILE *arq){
+  char *cep, *face;
+  double x, y;
+  Quadra qua;
+  cidade *c;
+
+  c = (cidade*) cid;
+  if(p!=NULL){
+    cep = pessoa_get_cep(p);
+    face = pessoa_get_face(p);
+    qua = NULL;
+    if(cep !=NULL)
+      qua = procuraQuadra(cid,cep);
+    if(qua!=NULL&&cep!=NULL){
+      if(strcmp(face,"N")==0){
+        x = getQuadraX(qua) + pessoa_get_num(p);
+        y = getQuadraY(qua) + getQuadraH(qua);
+      }
+      else if(strcmp(face,"S")==0){
+        x = getQuadraX(qua) + pessoa_get_num(p);
+        y = getQuadraY(qua);
+      }
+      else if(strcmp(face,"L")==0){
+        x = getQuadraX(qua);
+        y = getQuadraY(qua) + pessoa_get_num(p);
+      }
+      else if(strcmp(face,"O")==0){
+        x = getQuadraX(qua) + getQuadraW(qua);
+        y = getQuadraY(qua) + pessoa_get_num(p);
+      }
+      else{
+        x = getQuadraX(qua);
+        y = getQuadraY(qua);
+      }
+      /*fprintf(arq,"<circle cx=\"%f\" cy=\"%f\" r=\"8\" fill=\"blue\" ",x,y);
+      fprintf(arq,"stroke=\"darkblue\" stroke-width=\"2\" fill-opacity=\"0.7\"/>\n");*/
+
+      fprintf(arq," <rect x=\"%f\" y=\"%f\" width=\"20\" height=\"20\"", x, y);
+      fprintf(arq," fill=\"#D9D919\" stroke=\"darkblue\" stroke-width=\"2\" fill-opacity=\"0.9\"/>\n");
+      fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">M</text>\n", (x+5), (y+10));
+
+    }
+  }
+}
+
+void imprimeEstabelecimento(Cidade cid, Estab est, FILE *arq){
+  char *cep, face;
+  double x, y;
+  Quadra qua;
+  cidade *c;
+
+  c = (cidade*) cid;
+  if(est!=NULL){
+    cep = estab_get_cep(est);
+    face = estab_get_face(est);
+    qua = NULL;
+    if(cep !=NULL)
+      qua = procuraQuadra(cid,cep);
+    if(qua!=NULL&&cep!=NULL){
+      switch(face){
+        case 'N':
+          x = getQuadraX(qua) + estab_get_num(est);
+          y = getQuadraY(qua) + getQuadraH(qua);
+          break;
+        case 'S':
+          x = getQuadraX(qua) + estab_get_num(est);
+          y = getQuadraY(qua);
+          break;
+        case 'L':
+          x = getQuadraX(qua);
+          y = getQuadraY(qua) + estab_get_num(est);
+          break;
+        case 'O':
+          x = getQuadraX(qua) + getQuadraW(qua);
+          y = getQuadraY(qua) + estab_get_num(est);
+          break;
+        default:
+          x = getQuadraX(qua);
+          y = getQuadraY(qua);
+          break;
+      }
+      /*fprintf(arq,"<circle cx=\"%f\" cy=\"%f\" r=\"8\" fill=\"blue\" ",x,y);
+      fprintf(arq,"stroke=\"darkblue\" stroke-width=\"2\" fill-opacity=\"0.7\"/>\n");*/
+
+      fprintf(arq," <rect x=\"%f\" y=\"%f\" width=\"20\" height=\"20\"", x, y);
+      fprintf(arq," fill=\"#238E23\" stroke=\"#FF7F00\" stroke-width=\"2\" fill-opacity=\"0.9\"/>\n");
+      fprintf(arq," <text x=\"%f\" y=\"%f\" fill=\"black\">Est</text>\n", x, (y+10));
+
+    }
+  }
+}
+
+void imprimePessoasSvg(Cidade cid, FILE *arq){
+  int i, size;
+  Lista list;
+  Posic aux;
+  RegH reg;
+  Pessoa pes;
+  Hash h;
+  cidade *c = (cidade*) cid;
+  h = getHash(c->dici,"cpfXpessoa");
+  size = hash_get_size(h);
+  for(i=0;i<size;i++){
+    list = hash_get_position(h,i);
+    /*printf("\nTamanho da lista: %d\n", length(list));*/
+    aux = getFirst(list);
+    while(aux!=NULL){
+      reg = get(list,aux);
+      pes = hash_get_reg(reg);
+      imprimePessoaSvg(cid,pes,c->saiSvg);
+      aux = getNext(list,aux);
+    }
+  }
+}
+
+
+void imprimeEstabelecimentos(Cidade cid, FILE *arq){
+  int i, size;
+  Lista list;
+  Posic aux;
+  RegH reg;
+  Estab est;
+  Hash h;
+  cidade *c = (cidade*) cid;
+  h = getHash(c->dici,"codtestXest");
+  size = hash_get_size(h);
+  for(i=0;i<size;i++){
+    list = hash_get_position(h,i);
+    aux = getFirst(list);
+    while(aux!=NULL){
+      reg = get(list,aux);
+      est = hash_get_reg(reg);
+      imprimeEstabelecimento(cid,est,arq);
+      aux = getNext(list,aux);
+    }
+  }
+}
+/*void inserePessoa(Cidade cid, Pessoa p){
   cidade *c = (cidade*) cid;
   dicio_insere_pessoaCpf(c->dici,p);
   dicio_insere_pessoaNumCel(c->dici,p);
 }
+
+void insereDescEstab(Cidade cid, char *type, char *desc){
+  cidade *c = (cidade*) cid;
+  dicio_insere_Desctype(c->dici,desc,type);
+}
+
+void insereQuadrasHash(Cidade cid){
+  cidade *c = (cidade*) cid;
+  Posic aux;
+  Quadra qua;
+  aux = getFirst(c->qua);
+  while(aux!=NULL){
+    qua = get(c->qua,aux);
+    dicio_insere_quadraCep(c->dici,qua);
+    aux = getNext(c->qua,aux);
+  }
+}
+*/
