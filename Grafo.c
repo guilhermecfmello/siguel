@@ -4,6 +4,7 @@
 #include <math.h>
 #include "Grafo.h"
 
+#define INFINITO 1.7*pow(10,307)
 
 typedef struct _grafo{
   Hash vertices;
@@ -213,6 +214,119 @@ Lista grafo_get_allarestas(Grafo G){
   return list;
 }
 
+Lista grafo_get_vertices_adjacentes(Grafo G, Vertice V){
+  vertice *v;
+  aresta *a;
+  grafo *g;
+  Lista newList;
+  Posic aux;
+
+  v = (vertice*) V;
+  g = (grafo*) G;
+  newList = createList();
+  aux = getFirst(v->arestas);
+  while(aux!=NULL){
+    a = (aresta*) get(v->arestas, aux);
+    insert(newList, a->ponta);
+    aux = getNext(v->arestas, aux);
+  }
+  return newList;
+}
+
+Pilha grafo_melhor_caminho(Grafo G, Vertice V1, Vertice V2, char tipo){
+  int i;
+  vertice *v, *aux;
+  Pilha final;
+  Lista vertices;
+  Posic node;
+
+  vertices = grafo_get_allvertices(G);
+  grafo_inicializa_dijkstra(vertices,V1);
+
+  while(length(vertices)>0){
+    node = grafo_calcula_aresta_menor_peso(vertices);
+    v = get(vertices,node);
+    remover(vertices, node);
+
+    if(v==V2)
+      break;
+    grafo_relaxamento_arestas(G,v,tipo);
+  }
+  final = createPilha();
+  while(v!=NULL){
+    push(final,v);
+    v = v->prev;
+  }
+  return final;
+}
+
+void grafo_inicializa_dijkstra(Lista vertices, Vertice v1){
+  vertice *v;
+  Posic aux;
+
+  aux = getFirst(vertices);
+  while(aux!=NULL){
+    v = get(vertices, aux);
+    v->dist = INFINITO;
+    v->prev = NULL;
+    aux = getNext(vertices,aux);
+  }
+  v = (vertice*) v1;
+  v->dist = 0;
+}
+
+void grafo_relaxamento_arestas(Grafo G, Vertice V, char tipo){
+  double alt;
+  vertice *vzero, *v;
+  aresta *a;
+  grafo *g;
+  Lista vizinhos;
+  Posic aux;
+
+  vzero = (vertice*) V;
+  g = (grafo*) G;
+  vizinhos = grafo_get_vertices_adjacentes(G, V);
+  aux = getFirst(vizinhos);
+  while(aux!=NULL){
+    v = (vertice*) get(vizinhos,aux);
+    alt = v->dist;
+    a = (aresta*) grafo_get_aresta_ligacao(G,vzero,v);
+
+    if(tipo=='D'){
+      alt += a->cmp;
+    }
+    else if(tipo=='T'){
+      alt += a->tempo;
+    }
+
+    if(alt<v->dist){
+      v->dist = alt;
+      v->prev = vzero;
+    }
+    aux = getNext(vizinhos,aux);
+  }
+
+}
+
+Posic grafo_calcula_aresta_menor_peso(Lista vertices){
+  double min;
+  vertice *v;
+  Posic aux, auxMin;
+
+  min = INFINITO;
+  aux = getFirst(vertices);
+  auxMin = aux;
+  while(aux!=NULL){
+    v = (vertice*) get(vertices,aux);
+    if(v->dist<min){
+      min = v->dist;
+      auxMin = aux;
+    }
+    aux = getNext(vertices,aux);
+  }
+
+  return auxMin;
+}
 
 
 /*Getters*/

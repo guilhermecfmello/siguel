@@ -2,6 +2,7 @@
 #define GRAFO__H
 #include "Lista.h"
 #include "Hash.h"
+#include "Pilha.h"
 
 typedef void* Grafo;
 typedef void* Vertice;
@@ -89,6 +90,14 @@ double grafo_get_aresta_vm(Aresta A);
 /*Retorna a velocidade media da Aresta A*/
 Vertice grafo_get_aresta_ponta(Aresta A);
 /*Retorna o vertice para onde a Aresta A aponta*/
+
+Pilha grafo_melhor_caminho(Grafo G, Vertice V1, Vertice V2, char tipo);
+
+void grafo_inicializa_dijkstra(Lista vertices, Vertice v1);
+
+void grafo_relaxamento_arestas(Grafo G, Vertice V, char tipo);
+
+Posic grafo_calcula_aresta_menor_peso(Lista vertices);
 
 /*FUNCOES TESTE*/
 char *grafo_vertice_get_id(Vertice v);
