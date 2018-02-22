@@ -241,6 +241,7 @@ Pilha grafo_melhor_caminho(Grafo G, Vertice V1, Vertice V2, char tipo){
   Posic node;
 
   vertices = grafo_get_allvertices(G);
+
   grafo_inicializa_dijkstra(vertices,V1);
 
   while(length(vertices)>0){
@@ -289,7 +290,7 @@ void grafo_relaxamento_arestas(Grafo G, Vertice V, char tipo){
   aux = getFirst(vizinhos);
   while(aux!=NULL){
     v = (vertice*) get(vizinhos,aux);
-    alt = v->dist;
+    alt = vzero->dist;
     a = (aresta*) grafo_get_aresta_ligacao(G,vzero,v);
 
     if(tipo=='D'){
@@ -298,7 +299,6 @@ void grafo_relaxamento_arestas(Grafo G, Vertice V, char tipo){
     else if(tipo=='T'){
       alt += a->tempo;
     }
-
     if(alt<v->dist){
       v->dist = alt;
       v->prev = vzero;
@@ -426,4 +426,56 @@ Vertice grafo_get_aresta_ponta(Aresta A){
 
   a = (aresta*) A;
   return a->ponta;
+}
+
+char *grafo_calcula_quadrante(Vertice V1, Vertice V2){
+  char *final;
+  vertice *v1, *v2;
+
+  v1 = (vertice*) V1;
+  v2 = (vertice*) V2;
+  final = NULL;
+  if(v1->x>=v2->x&&v1->y>=v2->y){
+    final = malloc(sizeof(char)*4);
+    strcpy(final,"sul");
+  }
+  else if(v1->x<=v2->x&&v1->y>=v2->y){
+    final = malloc(sizeof(char)*6);
+    strcpy(final,"oeste");
+  }
+  else if(v1->x>=v2->x&v1->y<=v2->y){
+    final = malloc(sizeof(char)*6);
+    strcpy(final,"leste");
+  }
+  else if(v1->x<=v2->x&&v1->y<=v2->y){
+    final = malloc(sizeof(char)*6);
+    strcpy(final,"norte");
+  }
+  return final;
+}
+
+Vertice grafo_busca_vertice_proximo(Grafo gra, double x, double y){
+  int i;
+  double dist, distMin, x2, y2;
+  vertice *v, *vMin;
+  Lista list;
+  Posic node, reg;
+  grafo *g = (grafo*) gra;
+  vMin = NULL;
+  distMin = INFINITO;
+  for(i=0;i<g->size;i++){
+    list = hash_get_position(g->vertices,i);
+    node = getFirst(list);
+    while(node!=NULL){
+      reg = get(list,node);
+      v = (vertice*) hash_get_reg(reg);
+      dist = distanceBetweenPoints(x,y,v->x, v->y);
+      if(dist<distMin){
+        distMin = dist;
+        vMin = v;
+      }
+      node = getNext(list,node);
+    }
+  }
+  return vMin;
 }

@@ -356,3 +356,20 @@ Tree listToQuadtree(Lista l, getX gx, getY gy){
   }
   return t;
 }
+
+double calcula_quadra_ponto_x(Quadra qua, char *face, int num){
+  double x;
+  x = getQuadraX(qua);
+  if(strcmp(face,"N")==0||strcmp(face,"S")==0)
+    x += num;
+
+  return x;
+}
+
+double calcula_quadra_ponto_y(Quadra qua, char *face, int num){
+  double y;
+  y = getQuadraY(qua);
+  if(strcmp(face,"L")==0||strcmp(face,"O")==0)
+    y += num;
+  return y;
+}

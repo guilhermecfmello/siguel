@@ -1,7 +1,7 @@
 ARQUIVOS_OBJETOS = Principal.o Procedimentos.o Circulo.o Retangulo.o Lista.o\
 Escrita.o Operacoes.o Quadra.o Hidrante.o Torre.o Semaforo.o Cidade.o Formas.o\
 Pilha.o Ordenacao.o ConvexHull.o Quadtree.o Conversao.o Relatorios.o Hash.o\
-Pessoa.o Dicionario.o Grafo.o Estabelecimento.o Telefone.o
+Pessoa.o Dicionario.o Grafo.o Estabelecimento.o Telefone.o Tupla.o
 
 
 siguel: $(ARQUIVOS_OBJETOS)
@@ -23,7 +23,7 @@ Retangulo.o: Retangulo.c Retangulo.h
 	gcc -c Retangulo.c -o Retangulo.o -g -pedantic -ansi
 
 Cidade.o: Cidade.c Cidade.h
-	gcc -c Cidade.c -o Cidade.o -g -pedantic -ansi
+	gcc -c Cidade.c -o Cidade.o -lm -g -pedantic -ansi
 
 Torre.o: Torre.c Torre.h
 	gcc -c Torre.c -o Torre.o -g -pedantic -ansi
@@ -81,6 +81,9 @@ Estabelecimento.o: Estabelecimento.c Estabelecimento.h
 
 Telefone.o: Telefone.c Telefone.h
 	gcc -c Telefone.c -o Telefone.o -g -pedantic -ansi
+
+Tupla.o: Tupla.c Tupla.h
+	gcc -c Tupla.c -o Tupla.o -g -pedantic -ansi
 
 clean:
 		rm -rf *.o siguel

@@ -140,6 +140,7 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
           fscanf(ent,"%s ", cep);
           tor = procuraTorreList(cid,cep);
           dicio_insere_torre_sercomtuel(dici,tor);
+          setTorreOperadora(tor,'s');
         }
         else{
           fscanf(ent,"%lf %lf %s", &x, &y, cep);
@@ -168,6 +169,7 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
           fscanf(ent,"%s ", cep);
           tor = procuraTorreList(cid,cep);
           dicio_insere_torre_uelmobile(dici,tor);
+          setTorreOperadora(tor,'u');
         }
         break;
     }
@@ -177,19 +179,34 @@ Cidade processoGeo(char *nomeGeo, char *dirSaida, char *nomeEntradaQry, Formas *
 }
 
 Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
-  double x, y, larg, alt, raio;
-  int numQuaRem, compsIns, compsRem, id;
-  char *nomeSvg, *nomeTxt, *auxNome, *busca;
-  char end[40];
+  double x, y, larg, alt, raio, x2, y2, dist, distMin;
+  int numQuaRem, compsIns, compsRem, id, num;
+  char *nomeSvg, *nomeTxt, *auxNome, *busca, *r1, *r2, *nomeMapa;
+  char end[40], cep[100], face[100], sufixo[100], cor[100], R1[100], R2[100];
+  char face2[2];
   char op, op2, op3;
   Forma f1, f2, f3;
+  Torre tor, tor2;
+  Pilha caminho;
+  Quadra qua;
+  Pessoa pes;
+  Posic node;
+  Lista list;
+  Telefone tel;
+  Tupla tupla;
+  Grafo grafo;
+  Estab est;
+  Vertice v1, v2;
   RecursiveSearchPtrRet ptrFuncRet;
   RecursiveSearchPtrCirc ptrFuncCirc;
-  FILE *entQry, *saiTxt, *saiTxt2;
+  FILE *entQry, *saiTxt, *saiTxt2, *saiMapa;
   entQry = getArchQry(c);
   saiTxt = getArchTxtComp(c);
   saiTxt2 = getArchTxtCons(c);
   numQuaRem = 0;
+  r1 = NULL;
+  r2 = NULL;
+  tupla = tuplas_create();
   if(entQry!=NULL){
     while(!feof(entQry)){
       fscanf(entQry,"%c", &op);
@@ -269,8 +286,9 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
                 }
           break;
         case 'c':
-          fscanf(entQry,"%c%c%c",&op, &op2, &op3);
-          if(op=='r'&&op2=='d'&&op3=='?'){
+          fscanf(entQry,"%c%c",&op, &op2);
+          if(op=='r'&&op2=='d'){
+            fscanf(entQry,"%c", &op3);
             fscanf(entQry," %s ", end);
             f1 = procuraElemento(c,end,&op);
             if(f1!=NULL){
@@ -298,10 +316,30 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
               }
             }
           }
+          else if(op=='o'&&op2=='n'){
+            fscanf(entQry," %s %s %s %d ", end, cep,face,&num);
+            qua = cidade_busca_quadra(c, cep);
+            if(qua!=NULL){
+              x = calcula_quadra_ponto_x(qua,face,num);
+              y = calcula_quadra_ponto_y(qua,face,num);
+
+              pes = dicio_searchPessoa_numcel(getDicionario(c),end);
+              if(pes!=NULL){
+                op = pessoa_get_operadora(pes);
+                tor = cidade_get_torre_mais_proxima(c,x,y,op);
+                busca = getTorreId(tor);
+                tel = pessoa_get_tel(pes);
+                telefone_set_radiobase(tel,busca);
+                cidade_remove_torre(c, getTorreId(tor));
+                cidade_hash_insere_torre(c, tor, telefone_get_num(tel));
+              }
+            }
+          }
           break;
           case 'p':
-            fscanf(entQry,"%c%c ",&op,&op2);
-            if(op=='c'&&op2=='?'){
+            fscanf(entQry,"%c",&op);
+            if(op=='c'){
+              fscanf(entQry,"%c ", &op2);
               fscanf(entQry,"%s%c", end,&op);
               if(op==' '){
                 fscanf(entQry,"%lf %lf %lf %lf",&x,&y,&larg,&alt);
@@ -311,6 +349,46 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
               }
               else
                 coberturaTorres(c,NULL,nomeBase,nomeQry,dirBSD,end);
+            }
+            else if(op=='?'){
+              /*TRAJETO AQUI!!!!!!!!!!!!!!!!!!!!!!*/
+              fscanf(entQry," %c", &op);
+              if(op=='t'){
+                fscanf(entQry," %c %s %s ", &op, sufixo, cor);
+                grafo = cidade_get_grafo(c);
+                x = tuplas_get_x(tupla, sufixo);
+                y = tuplas_get_y(tupla, sufixo);
+                v1 = grafo_busca_vertice_proximo(grafo,x,y);
+                x = tuplas_get_x(tupla,cor);
+                y = tuplas_get_y(tupla,cor);
+                v2 = grafo_busca_vertice_proximo(grafo,x,y);
+                caminho = grafo_melhor_caminho(grafo, v1, v2, op);
+                nomeMapa = malloc(sizeof(char)*(strlen(nomeBase)+strlen(dirBSD)+10));
+                sprintf(nomeMapa,"%s%s-mapa.txt",dirBSD,nomeBase);
+                saiMapa = fopen(nomeMapa,"w");
+                cidade_imprime_caminho_escrito(c,caminho,saiMapa);
+                fclose(saiMapa);
+                saiMapa = NULL;
+                free(nomeMapa);
+              }
+              else{
+                fscanf(entQry," %s %c %s %s %s ", sufixo, &op, R1, R2, cor);
+                grafo = cidade_get_grafo(c);
+                x = tuplas_get_x(tupla, R1);
+                y = tuplas_get_y(tupla, R1);
+                v1 = grafo_busca_vertice_proximo(grafo,x,y);
+                x = tuplas_get_x(tupla, R2);
+                y = tuplas_get_y(tupla, R2);
+                v2 = grafo_busca_vertice_proximo(grafo,x,y);
+                caminho = grafo_melhor_caminho(grafo, v1, v2, op);
+                nomeMapa = malloc(sizeof(char)*(strlen(nomeBase)+strlen(dirBSD)+strlen(sufixo)+6));
+                sprintf(nomeMapa,"%s%s-%s.svg",dirBSD,nomeBase,sufixo);
+                saiMapa = fopen(nomeMapa,"w");
+                cidade_imprime_caminho_svg(c,caminho,cor,saiMapa);
+                fclose(saiMapa);
+                saiMapa = NULL;
+                free(nomeMapa);
+              }
             }
             break;
             case 'a':
@@ -326,6 +404,72 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
               else
                 coberturaTorresTxt(c,NULL);
             }
+        case '@':
+          fscanf(entQry,"%c%c ", &op, &op2);
+          if(op2=='?'){
+            switch(op){
+              case 'f':
+                fscanf(entQry,"%s %s ", sufixo, end);
+                tor = cidade_busca_torre_pelo_celular(c,end);
+                if(tor!=NULL){
+                  x = getTorreX(tor);
+                  y = getTorreY(tor);
+                  tuplas_set_regs(tupla, sufixo, x, y);
+                }
+              break;
+              case 'm':
+                fscanf(entQry,"%s %s ", sufixo, end);
+                pes = cidade_busca_pessoa_por_cpf(c,end);
+                r1 = pessoa_get_cep(pes);
+                qua = cidade_busca_quadra(c,r1);
+                if(qua!=NULL){
+                  x = calcula_quadra_ponto_x(qua,pessoa_get_face(pes),pessoa_get_num(pes));
+                  y = calcula_quadra_ponto_y(qua,pessoa_get_face(pes),pessoa_get_num(pes));
+                  tuplas_set_regs(tupla,sufixo,x,y);
+                }
+              break;
+              case 'e':
+                fscanf(entQry," %s %s %s %d ", R1, end, face, &num);
+                qua = cidade_busca_quadra(c, end);
+                x = calcula_quadra_ponto_x(qua,face,num);
+                y = calcula_quadra_ponto_y(qua,face,num);
+                tuplas_set_regs(tupla,R1,x,y);
+              break;
+              case 'g':
+                fscanf(entQry," %s %s ", R1, end);
+                qua = cidade_busca_equipe_urb(c,end,&op);
+                if(op=='h'){
+                  x = getHidranteX(qua);
+                  y = getHidranteY(qua);
+                }
+                else if(op=='s'){
+                  x = getSemaforoX(qua);
+                  y = getSemaforoY(qua);
+                }
+                tuplas_set_regs(tupla,R1,x,y);
+              break;
+            }
+          }
+          else if(op2=='y'){
+            fscanf(entQry," %s %lf %lf ", R1, &x, &y);
+            tuplas_set_regs(tupla,R1,x,y);
+          }
+          else if(op2=='p'){
+            fscanf(entQry," %s %s %s ", R1, end, R2);
+            x = tuplas_get_x(tupla,R2);
+            y = tuplas_get_y(tupla,R2);
+            est = cidade_busca_estab_proximo(c,x,y);
+            op = estab_get_face(est);
+            face2[0] = op;
+            face2[1] = '\0';
+            num = estab_get_num(est);
+            busca = estab_get_cep(est);
+            qua = cidade_busca_quadra(c,busca);
+            x = calcula_quadra_ponto_x(qua,face2,num);
+            y = calcula_quadra_ponto_y(qua,face2,num);
+            tuplas_set_regs(tupla,R1,x,y);
+          }
+        break;
       }
 
 
@@ -409,10 +553,14 @@ Cidade processoTm(Cidade cid){
       pessoa_set_tel(pes,tel);
       dicio_insere_pessoaNumCel(dici,pes);
     }
-    if(strcmp(op,"su")==0)
+    if(strcmp(op,"su")==0){
       dicio_insere_cpf_sercomtuel(dici,cpf,numcel);
-    else if(strcmp(op,"um")==0)
+      pessoa_set_operadora(pes,'s');
+    }
+    else if(strcmp(op,"um")==0){
       dicio_insere_cpf_uelmobile(dici,cpf,numcel);
+      pessoa_set_operadora(pes,'u');
+    }
     else
       printf("Erro na leitura de TM\n");
   }
@@ -420,8 +568,8 @@ Cidade processoTm(Cidade cid){
 }
 
 Cidade processoEc(Cidade cid){
-  char op, face;
-  char codt[30], desc[100];
+  char face;
+  char op, codt[30], desc[100];
   char cep[20], cnpj[20], nome[30];
   int num;
   FILE *arq;
@@ -433,15 +581,43 @@ Cidade processoEc(Cidade cid){
     fscanf(arq,"%c ", &op);
     switch(op){
       case 't':
-        fscanf(arq,"%s %s", codt, desc);
+        fscanf(arq,"%s %s ", codt, desc);
         dicio_insere_Desctype(dici, desc, codt);
-        break;
+      break;
       case 'e':
-        fscanf(arq,"%s %s %s %d %s %s", codt, cep, &face, &num, cnpj, nome);
+        fscanf(arq,"%s %s %s %d %s %s ", codt, cep, &face, &num, cnpj, nome);
         est = estab_create(cnpj,nome,codt,cep,face,num);
         dicio_insere_estType(dici,est,codt);
+      break;
+      default:
+        printf("\nErro na leitura do arquivo EC.");
+      break;
+    }
+  }
+  return cid;
+}
+
+Cidade processoVia(Cidade cid){
+  int i, size, cont;
+  char op, id[100], ldir[100], lesq[100], v1[100], v2[100];
+  double x, y, cmp, vm;
+  FILE *arq;
+  cont = 0;
+  arq = getArchVia(cid);
+  while(!feof(arq)){
+    fscanf(arq,"%c ", &op);
+    cont++;
+    switch(op){
+      case 'v':
+        fscanf(arq,"%s %lf %lf ", id, &x, &y);
+        cidade_cria_cruzamentos(cid,id,x,y);
+        break;
+      case 'e':
+        fscanf(arq,"%s %s %s %s %lf %lf %s ", v1, v2, ldir, lesq, &cmp, &vm, id);
+        cidade_cria_ruas(cid,id,v1,v2,ldir,lesq,cmp,vm);
         break;
       default:
+        printf("\nErro na leitura do arquivo de vias");
         break;
     }
   }

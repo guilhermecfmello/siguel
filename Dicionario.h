@@ -7,6 +7,7 @@
 #include "Quadra.h"
 #include "Estabelecimento.h"
 #include "Telefone.h"
+#include "Lista.h"
 
 /*O TAD DICIONARIO ARMAZENA TABELAS HASH DE CONSULTA SOBRE ALGUNS ELEMENTOS DA CIDADE.
 OS SEGUINTES ITENS PODEM SER INSERIDOS E BUSCADOS:
@@ -52,9 +53,12 @@ Pessoa dicio_searchPessoa_numcel(Dicionario di, char *key);
 /*Busca na hash a pessoa, utilizando o numero de celular como chave. Retorna
 NULL caso nao encontre*/
 
-Torre dicio_searchRadio_numcel(Dicionario di, char *key);
+char *dicio_searchRadio_numcel(Dicionario di, char *key);
 /*Busca na hash a radiobase, utilizando o numero do celular como chave Retorna
 NULL caso nao encontre*/
+
+void dicio_remove_radio_numcel(Dicionario di, char *key);
+
 char *dicio_searchDesc_type(Dicionario di, char *key);
 /*Busca na hash de descricoes de estabelecimento, utilizando o tipo (codt) do
 estabelecimento como chave. Retorna NULL caso nao encontre*/
@@ -82,6 +86,10 @@ Torre dicio_search_torre_sercomtuel(Dicionario di, char *id);
 /*Busca na hash de torres da sercomtuel usando o id passado como chave*/
 Torre dicio_search_torre_uelmobile(Dicionario di, char *id);
 /*Busca na hash de torres da uelmobile usando o id passado como chave*/
+
+Lista dicio_get_all_torres_sercomtuel(Dicionario di);
+
+Lista dicio_get_all_torres_uelmobile(Dicionario di);
 
 /*==========Implementar se der tempo==========*/
 

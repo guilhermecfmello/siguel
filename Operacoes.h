@@ -142,4 +142,9 @@ Tree listToQuadtree(Lista l, getX gx, getY gy);
 Retorna uma arvore balanceada atraves do algoritmo convexhull.
 */
 
+double calcula_quadra_ponto_x(Quadra qua, char *face, int num);
+
+double calcula_quadra_ponto_y(Quadra qua, char *face, int num);
+
+
 #endif

@@ -13,6 +13,7 @@ typedef struct _pessoa{
   char *face;
   int num;
   char *comp;
+  char operadora;
   Telefone tel;
 }pessoa;
 
@@ -33,6 +34,7 @@ Pessoa pessoa_create(char *cpf, char *nome, char *sobrenome,char sexo, char *nas
   p->face = NULL;
   p->num = 0;
   p->comp = NULL;
+  p->operadora = 'n';
   return p;
 }
 
@@ -125,4 +127,16 @@ void pessoa_set_comp(Pessoa pes, char *set){
   }
   else
     printf("Erro ao setar comp na pessoa %s\n", p->nome);
+}
+
+void pessoa_set_operadora(Pessoa pes, char op){
+  pessoa *p = (pessoa*) pes;
+  p->operadora = op;
+}
+
+char pessoa_get_operadora(Pessoa pes){
+  pessoa *p;
+
+  p = (pessoa*) pes;
+  return p->operadora;
 }

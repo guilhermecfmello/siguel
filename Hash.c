@@ -68,7 +68,6 @@ RegH hash_search(Hash ha, char* key){
   PosicH p;
   reg *r;
   ind = hash_code(ha,key);
-
   p = hash_search_List(ha,key);
   if(p!=NULL){
     r = (reg*) get(NULL,p);

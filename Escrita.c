@@ -137,9 +137,8 @@ char *removeExtensao(char *c){
   char *aux;
   size = strlen(c);
   aux = malloc(sizeof(char)*(size-3));
-  for(i=0;i<size-4;i++){
+  for(i=0;i<size-4;i++)
     aux[i] = c[i];
-  }
   aux[i] = '\0';
   return aux;
 }

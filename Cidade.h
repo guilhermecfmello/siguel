@@ -9,7 +9,8 @@
 #include "Circulo.h"
 #include "Quadtree.h"
 #include "Dicionario.h"
-
+#include "Pilha.h"
+#include "Grafo.h"
 /*CIDADE É FORMADA POR UM CONJUNTO DE QUADRAS, HIDRANTES, SEMAFOROS E TORRES.
 POSSUI OPERACOES PARA LIDAR COM INSERCAO, REMOCAO E BUSCA DE CADA ELEMENTO.*/
 
@@ -231,6 +232,7 @@ Caso seja uma torre: Retorna a torre encontrada e o caractere 't' como referenci
 void openArchAreaTorres(char *patch, char *nome, char *nomeQry, char *sufixo,Cidade c);
 
 
+
 void openArchSvg(char *patch, char *nome, char *qry, Cidade c);
 /*Abre um arquivo de saida svg na cidade, no caminho descrito por patch, com o nome descrito por "nome"
 Arquivo somente de escrita.
@@ -370,5 +372,59 @@ void imprimeEstabelecimentos(Cidade cid, FILE *arq);
 
 void imprimeEstabelecimento(Cidade cid, Estab est, FILE *arq);
 
+void openArchVia(char *patch, char *nome, Cidade cid);
+
+FILE *getArchVia(Cidade cid);
+
+void closeArchVia(Cidade cid);
+
+void openArchSvgVia(char *patch, char *nome, char *sufixo, Cidade cid);
+
+FILE *getArchSvgVia(Cidade cid);
+
+void closeArchSvgVia(Cidade cid);
+
+void cidade_cria_cruzamentos(Cidade cid, char *id, double x, double y);
+/*Cria pontos de cruzamento na cidade, nos quais o motorista tem a opcao
+de trocar de rua ou mudar o caminho.*/
+
+void cidade_cria_ruas(Cidade cid, char *nome, char *i,char *j,char *ldir, char *lesq, double cmp, double vm);
+/*Cria rua na cidade Cid, de nome "nome"*/
+
+Quadra cidade_busca_quadra(Cidade cid, char *cep);
+/*Dado um cep, retorna a quadra correspondente, ou NULL caso nao encontre.*/
+
+Pessoa cidade_busca_pessoa_por_numcel(Cidade cid, char *numcel);
+/*Busca na cidade cid a pessoa identificada pelo numero de celular "numcel"*/
+
+Lista cidade_get_all_Torres(Cidade cid);
+
+double cidade_pega_ultima_torre_x(Cidade cid, Telefone t);
+/*Pega a posica x da ultima torre em que o telefone T se conectou.*/
+
+double cidade_pega_ultima_torre_y(Cidade cid, Telefone t);
+/*Pega a posica y da ultima torre em que o telefone T se conectou.*/
+
+Torre cidade_get_torre_mais_proxima(Cidade cid, double x, double y, char operadora);
+
+void cidade_remove_torre(Cidade cid, char *key);
+
+void cidade_hash_insere_torre(Cidade cid, Torre tor, char *cel);
+
+Torre cidade_busca_torre_pelo_celular(Cidade cid, char *key);
+
+void inserePessoas(Cidade cid);
+
+Pessoa cidade_busca_pessoa_por_cpf(Cidade cid, char *key);
+
+void cidade_imprime_caminho_svg(Cidade cid, Pilha vertices, char *color, FILE *arq);
+
+void cidade_imprime_caminho_escrito(Cidade cid, Pilha vertices, FILE *arq);
+
+Grafo cidade_get_grafo(Cidade cid);
+
+Posic cidade_busca_equipe_urb(Cidade cid, char *id, char *tipo);
+
+Estab cidade_busca_estab_proximo(Cidade cid, double x, double y);
 
 #endif

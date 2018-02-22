@@ -3,6 +3,7 @@
 #include "Lista.h"
 #include "Hash.h"
 #include "Pilha.h"
+#include "Operacoes.h"
 
 typedef void* Grafo;
 typedef void* Vertice;
@@ -98,6 +99,16 @@ void grafo_inicializa_dijkstra(Lista vertices, Vertice v1);
 void grafo_relaxamento_arestas(Grafo G, Vertice V, char tipo);
 
 Posic grafo_calcula_aresta_menor_peso(Lista vertices);
+
+char *grafo_calcula_quadrante(Vertice V1, Vertice V2);
+/*Dado 2 vertices, retorna a posicao em que v2 esta em relacao ao v2:
+N para norte.
+S para sul.
+L para leste.
+O para oeste.
+*/
+
+Vertice grafo_busca_vertice_proximo(Grafo gra, double x, double y);
 
 /*FUNCOES TESTE*/
 char *grafo_vertice_get_id(Vertice v);

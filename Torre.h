@@ -34,4 +34,9 @@ void setTorreRaio(Torre tor, double r);
 Seta a torre com o raio passado;
 */
 double getTorreRaio(Torre tor);
+
+void setTorreOperadora(Torre tor, char op);
+
+char getTorreOperadora(Torre tor);
+
 #endif

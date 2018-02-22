@@ -8,6 +8,7 @@ typedef struct _torre{
   double y;
   double raio;
   char *id;
+  char operadora;
 }torre;
 
 Torre createTorre(double x, double y, char *id){
@@ -19,8 +20,20 @@ Torre createTorre(double x, double y, char *id){
   t->y = y;
   t->id = newId;
   t->raio = 0;
+  t->operadora = 'n';
   return t;
 }
+
+void setTorreOperadora(Torre tor, char op){
+  torre *t;
+  t = (torre*) tor;
+  t->operadora = op;
+}
+char getTorreOperadora(Torre tor){
+  torre *t = (torre*) tor;
+  return t->operadora;
+}
+
 
 double getTorreX(Torre tor){
   torre *t = (torre*) tor;

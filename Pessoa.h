@@ -38,5 +38,7 @@ void pessoa_set_tel(Pessoa pes, Telefone tel);
 
 Telefone pessoa_get_tel(Pessoa pes);
 
+void pessoa_set_operadora(Pessoa pes, char op);
 
+char pessoa_get_operadora(Pessoa pes);
 #endif

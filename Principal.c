@@ -14,7 +14,7 @@ int main(int argc,char *argv[]){
   int num, size;
   char *nomeEntradaGeo, *dirSaida, *dirEntrada;
   char *aux, *entradaPadrao, *nomeEntradaQry, *nomeBaseQry;
-  char *nomePm, *nomeEc, *nomeTm;
+  char *nomePm, *nomeEc, *nomeTm, *nomeVia;
   int acc;
   Quadra q;
   getX gx;
@@ -32,6 +32,7 @@ int main(int argc,char *argv[]){
   nomePm = pegaParametro(argc,argv,"-pm");
   nomeTm = pegaParametro(argc,argv,"-tm");
   nomeEc = pegaParametro(argc,argv,"-ec");
+  nomeVia = pegaParametro(argc,argv,"-v");
   acc = parametroAcc(argc, argv);
   cid = createCidade();
   if(parametroId(argc,argv))
@@ -61,6 +62,8 @@ int main(int argc,char *argv[]){
     openArchPm(cid,dirEntrada,nomePm);
   if(nomeTm!=NULL)
     openArchTm(cid,dirEntrada,nomeTm);
+  if(nomeVia!=NULL)
+    openArchVia(dirEntrada,nomeVia,cid);
 
   if(acc) openArchTxtComp(dirSaida,"resumo","a",cid);
   else openArchTxtComp(dirSaida,"resumo","w",cid);
@@ -70,13 +73,16 @@ int main(int argc,char *argv[]){
   /*MUDANCA DA ESTRUTURA DE DADOS DOS ELEMENTOS DA CIDADE
   PASSANDO DE LISTA PARA QUADTREE BALANCEADA PELO CONVEXHULL*/
   listToQuadTreeCH(cid);
+  insereQuadrasHash(cid);
   if(nomeEc!=NULL)
-  cid = processoEc(cid);
-  cid = processoQry(cid, entradaPadrao,nomeEntradaQry , dirSaida);
+    cid = processoEc(cid);
   if(nomePm!=NULL)
     cid = processoPm(cid);
   if(nomeTm!=NULL)
     cid = processoTm(cid);
+  if(nomeVia!=NULL);
+    cid = processoVia(cid);
+  cid = processoQry(cid, entradaPadrao,nomeEntradaQry , dirSaida);
   /*LimpaListas(cid);*/
   /*IMPRESSAO DA CIDADE NO ARQUIVO QRY*/
   saiSvg = getArchSvg(cid);

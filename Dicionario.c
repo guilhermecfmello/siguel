@@ -121,7 +121,7 @@ Pessoa dicio_searchPessoa_numcel(Dicionario di, char *key){
   return p;
 }
 
-Torre dicio_searchRadio_numcel(Dicionario di, char *key){
+char *dicio_searchRadio_numcel(Dicionario di, char *key){
   Torre t;
   dic *d = (dic*) di;
   t = hash_search(d->numcelXradiobase,key);
@@ -207,4 +207,9 @@ Torre dicio_search_torre_sercomtuel(Dicionario di, char *id){
 Torre dicio_search_torre_uelmobile(Dicionario di, char *id){
   dic *d = (dic*) di;
   return hash_search(d->umidXtorre,id);
+}
+
+void dicio_remove_radio_numcel(Dicionario di, char *key){
+  dic *d = (dic*) di;
+  hash_remove(d->numcelXradiobase,key);
 }

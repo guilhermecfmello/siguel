@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "Cidade.h"
 #include "Escrita.h"
 #include "Dicionario.h"
 #include "Hash.h"
+#include "Grafo.h"
+
+#define INFINITO 1.7*pow(10,307)
 
 typedef struct _cidade{
   Lista qua;
@@ -12,6 +16,7 @@ typedef struct _cidade{
   Lista sem;
   Lista tor;
   Dicionario dici;
+  Grafo vias;/*Grafo contendo as vidas da cidade*/
   Tree tQua;/*Quadtree com os elementos da cidade*/
   Tree tHid;/*Quadtree com os elementos da cidade*/
   Tree tSem;/*Quadtree com os elementos da cidade*/
@@ -25,6 +30,8 @@ typedef struct _cidade{
   FILE *entTm;/*ARQUIVO DE ENTRADA, DETERMINAR PESSOAS E SUAS RESPECTIVAS LINHAS MOVEIS*/
   FILE *entEc;/*ARQUIVO DE ENTRADA, LEITURA E CRIACAO DE ESTABELECIMENTOS COMERCIAIS*/
   FILE *areaTorres;/*ARQUIVO DE SAIDA, SVG QUE MOSTRA A CIDADE, A AREA DE COBERTURA DAS TORRES E SEU ENVOLTORIO CONVEXO*/
+  FILE *entVia;/*ARQUIVO DE ENTRADA, LEITURA DAS VIAS DA CIDADE*/
+  FILE *saiSvgVias; /*ARQUIVO DE SAIDA, NELE SERA IMPRESSO O MAPA DA CIDADE COM OS CAMINHOS CONSULTADOS PELO QRY.*/
   char *cfillQuadras;
   char *cstrkQuadras;
   char *cfillHidrantes;
@@ -47,6 +54,7 @@ Cidade createCidade(){
   c->tSem = quadtree_create();
   c->tTor = quadtree_create();
   c->dici = dicionario_create();
+  c->vias = grafo_create(31);
   c->saiSvg = NULL;
   c->saiTxtConsultas = NULL;
   c->saiTxtComp = NULL;
@@ -55,6 +63,8 @@ Cidade createCidade(){
   c->entPm = NULL;
   c->entTm = NULL;
   c->entEc = NULL;
+  c->entVia = NULL;
+  c->saiSvgVias = NULL;
   c->areaTorres = NULL;
   c->cfillQuadras = NULL;
   c->cfillHidrantes = NULL;
@@ -609,6 +619,7 @@ Posic procuraElemento(Cidade c, char *end, char *typeElement){
   return NULL;
 }
 
+
 void openArchAreaTorres(char *patch, char *nome, char *nomeQry2, char *sufixo,Cidade c){
     char *nomeCompleto, *nomeQry;
     cidade *cid = (cidade*) c;
@@ -987,6 +998,21 @@ FILE *openArchEc(Cidade cid, char *patch, char *name){
     return c->entEc;
 }
 
+void openArchVia(char *patch, char *nome, Cidade cid){
+  char *nomeCompleto;
+  cidade *c = (cidade*) cid;
+
+  if(patch!=NULL){
+    nomeCompleto = malloc(sizeof(char)*(strlen(patch)+strlen(nome)+1));
+    sprintf(nomeCompleto,"%s%s", patch, nome);
+  }
+  else{
+    nomeCompleto = malloc(sizeof(char)*(strlen(nome)+1));
+    sprintf(nomeCompleto,"%s", nome);
+  }
+  c->entVia = fopen(nomeCompleto,"r");
+}
+
 FILE *openArchTm(Cidade cid, char *patch, char *name){
   char *nomeCompleto;
   int sizePatch, sizeName;
@@ -1174,16 +1200,224 @@ void imprimeEstabelecimentos(Cidade cid, FILE *arq){
     }
   }
 }
+
+FILE *getArchVia(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->entVia;
+}
+
+void closeArchVia(Cidade cid){
+  cidade *c = (cidade*) cid;
+  if(c->entVia!=NULL)
+    fclose(c->entVia);
+}
+
+void openArchSvgVia(char *patch, char *nome, char *sufixo, Cidade cid){
+  char *nomeCompleto, *nome2;
+  cidade *c = (cidade*) cid;
+  nome2 = removeExtensao(nome);
+  nomeCompleto = malloc(sizeof(char)*(strlen(patch)+strlen(nome2)+strlen(sufixo)+6));
+  sprintf(nomeCompleto,"%s%s-%s.svg",patch,nome2,sufixo);
+  c->saiSvgVias = fopen(nomeCompleto,"w");
+}
+
+FILE *getArchSvgVia(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->saiSvgVias;
+}
+
+void closeArchSvgVia(Cidade cid){
+  cidade *c = (cidade*) cid;
+  if(c->saiSvgVias!=NULL){
+    fprintf(c->saiSvgVias,"</svg>\n");
+    fclose(c->saiSvgVias);
+  }
+}
+
+void cidade_cria_cruzamentos(Cidade cid, char *id, double x, double y){
+  Vertice v;
+  cidade *c = (cidade*) cid;
+
+  v = grafo_create_vertice(id,x,y);
+  grafo_insere_vertice(c->vias,v);
+}
+
+void cidade_cria_ruas(Cidade cid, char *nome, char *i,char *j,char *ldir, char *lesq, double cmp, double vm){
+  Aresta a;
+  Vertice v1, v2;
+  cidade *c;
+  c = (cidade*) cid;
+  a = grafo_create_aresta(nome,ldir,lesq,cmp,vm);
+  v1 = grafo_search_vertice_id(c->vias,i);
+  v2 = grafo_search_vertice_id(c->vias,j);
+  grafo_insere_aresta(c->vias,a,v1,v2);
+}
+
+Quadra cidade_busca_quadra(Cidade cid, char *cep){
+  cidade *c;
+  c = (cidade*) cid;
+  return dicio_search_Quadra_cep(c->dici,cep);
+}
+
+Pessoa cidade_busca_pessoa_por_numcel(Cidade cid, char *numcel){
+  cidade *c;
+  Pessoa p;
+  c = (cidade*) cid;
+  p = dicio_searchPessoa_numcel(c->dici,numcel);
+  return p;
+}
+
+Lista cidade_get_all_Torres(Cidade cid){
+  cidade *c = (cidade*) cid;
+
+  return c->tor;
+}
+
+double cidade_pega_ultima_torre_x(Cidade cid, Telefone t){
+  char *id;
+  Dicionario d;
+  Lista list;
+  d = getDicionario(cid);
+
+
+}
+
+Torre cidade_get_torre_mais_proxima(Cidade cid, double x, double y, char operadora){
+  double x2, y2, dist, distMin;
+  cidade *c;
+  Lista list;
+  Posic aux;
+  Torre tor, torMin;
+  distMin = INFINITO;
+  c = (cidade*) cid;
+
+  torMin = NULL;
+  list = c->tor;
+  aux = getFirst(list);
+  while(aux!=NULL){
+    tor = get(list,aux);
+    if(getTorreOperadora(tor)==operadora){
+      x2 = getTorreX(tor);
+      y2 = getTorreY(tor);
+      dist = distanceBetweenPoints(x,y,x2,y2);
+      if(dist<distMin){
+        torMin = tor;
+        distMin = dist;
+      }
+    }
+    aux = getNext(list,aux);
+
+  }
+  return torMin;
+}
+
+void cidade_remove_torre(Cidade cid, char *key){
+  cidade *c = (cidade*) cid;
+  dicio_remove_radio_numcel(c->dici, key);
+}
+
+void cidade_hash_insere_torre(Cidade cid, Torre tor, char *cel){
+  cidade *c = (cidade*) cid;
+  dicio_insere_radiobaseNumCel(c->dici,getTorreId(tor),cel);
+}
+
+Torre cidade_busca_torre_pelo_celular(Cidade cid, char *key){
+  char *id, *idatual;
+  cidade *c;
+  Posic node;
+  Torre tor;
+  c = (cidade*) cid;
+  id = dicio_searchRadio_numcel(c->dici,key);
+  node = getFirst(c->tor);
+  while(node!=NULL){
+    tor = get(c->tor,node);
+    idatual = getTorreId(tor);
+    if(strcmp(id,idatual)==0)
+      return tor;
+    node = getNext(c->tor, node);
+  }
+  return NULL;
+}
+
+void cidade_imprime_caminho_svg(Cidade cid, Pilha vertices, char *color, FILE *arq){
+  double x1, y1, x2, y2;
+  cidade *c;
+  Vertice v1, v2;
+  c = (cidade*) cid;
+  fprintf(arq,"<svg xmlns=\"http://www.w3.org/2000/svg\">\n");
+  imprimeQuadrasSvg(cid,arq);
+  imprimeSemaforosSvg(cid,arq);
+  imprimeHidrantesSvg(cid,arq);
+  imprimeTorresSvg(cid,arq);
+  imprimePessoasSvg(cid,arq);
+  imprimeEstabelecimentos(cid,arq);
+  if(getSizePilha(vertices)>0)
+    v1 = pop(vertices);
+  while(getSizePilha(vertices)>1){
+    x1 = grafo_get_vertice_x(v1);
+    y1 = grafo_get_vertice_y(v1);
+    v2 = pop(vertices);
+    x2 = grafo_get_vertice_x(v2);
+    y2 = grafo_get_vertice_y(v2);
+    fprintf(arq," <line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" ", x1, y1, x2, y2);
+    fprintf(arq,"stroke-width=\"2\" stroke=\"%s\"/>\n", color);
+    v1 = v2;
+  }
+  if(getSizePilha(vertices)>0){
+    v1 = pop(vertices);
+    x1 = grafo_get_vertice_x(v1);
+    y1 = grafo_get_vertice_y(v1);
+    fprintf(arq," <line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" ", x1, y1, x2, y2);
+    fprintf(arq,"stroke-width=\"2\" stroke=\"%s\"/>\n", color);
+  }
+  fprintf(arq,"</svg>");
+}
+
+void cidade_imprime_caminho_escrito(Cidade cid, Pilha vertices, FILE *arq){
+  char *dir, *nome1, *nome2;
+  Vertice v1, v2, v3;
+  Aresta a1, a2;
+  if(getSizePilha(vertices)>2){
+    v1 = pop(vertices);
+    v2 = pop(vertices);
+    while(getSizePilha(vertices)>0){
+      v3 = pop(vertices);
+      dir = grafo_calcula_quadrante(v1,v2);
+      a1 = grafo_get_aresta_ligacao(NULL, v1, v2);
+      a2 = grafo_get_aresta_ligacao(NULL, v2, v3);
+      nome1 = grafo_get_aresta_nome(a1);
+      nome2 = grafo_get_aresta_nome(a2);
+      fprintf(arq,"Siga na direcao %s pela rua %s ate o cruzamento com a rua %s.\n", dir, nome1, nome2);
+      v1 = v2;
+      v2 = v3;
+    }
+  }
+  else{
+    fprintf(arq,"Caminho de consulta muito curto\n");
+  }
+}
+
 /*void inserePessoa(Cidade cid, Pessoa p){
   cidade *c = (cidade*) cid;
   dicio_insere_pessoaCpf(c->dici,p);
   dicio_insere_pessoaNumCel(c->dici,p);
 }
 
-void insereDescEstab(Cidade cid, char *type, char *desc){
+void inserePessoas(Cidade cid){
+  Posic aux;
+  cidade *c = (cidade*) cid;
+
+  aux = getFirst(c->pes);
+  while(aux!=NULL){
+    inserePessoa(c,get(c->pes,aux));
+    aux = getNext(c->pes,aux);
+  }
+
+}*/
+/*void insereDescEstab(Cidade cid, char *type, char *desc){
   cidade *c = (cidade*) cid;
   dicio_insere_Desctype(c->dici,desc,type);
-}
+}*/
 
 void insereQuadrasHash(Cidade cid){
   cidade *c = (cidade*) cid;
@@ -1196,4 +1430,82 @@ void insereQuadrasHash(Cidade cid){
     aux = getNext(c->qua,aux);
   }
 }
-*/
+
+Pessoa cidade_busca_pessoa_por_cpf(Cidade cid, char *key){
+  cidade *c;
+  c = (cidade*) cid;
+  return dicio_searchPessoa_cpf(c->dici,key);
+}
+
+Grafo cidade_get_grafo(Cidade cid){
+  cidade *c = (cidade*) cid;
+  return c->vias;
+}
+
+Posic cidade_busca_equipe_urb(Cidade cid, char *id, char *tipo){
+  char *idaux;
+  cidade *c = (cidade*) cid;
+  Posic node, algo;
+
+  *tipo = 'a';
+  node = getFirst(c->hid);
+  while(node!=NULL){
+    algo = get(c->hid,node);
+    idaux = getHidranteId(algo);
+    if(strcmp(idaux,id)==0){
+      *tipo = 'h';
+      return algo;
+    }
+    node = getNext(c->hid,node);
+  }
+
+  node = getFirst(c->sem);
+  while(node!=NULL){
+    algo = get(c->hid,node);
+    idaux = getSemaforoId(algo);
+    if(strcmp(idaux,id)==0){
+      *tipo = 's';
+      return algo;
+    }
+    node = getNext(c->sem,node);
+  }
+
+}
+
+Estab cidade_busca_estab_proximo(Cidade cid, double x, double y){
+  int i, size, num;
+  double distMin, dist, x2, y2;
+  char *cep, face, face2[2];
+  cidade *c;
+  Lista list;
+  Hash h;
+  Posic node;
+  Estab est, estMin;
+  Quadra qua;
+  estMin = NULL;
+  c = (cidade*) cid;
+  h = getHash(c->dici, "codtestXest");
+  size = hash_get_size(h);
+  distMin = INFINITO;
+  for(i=0;i<size;i++){
+    list = hash_get_position(h,i);
+    node = getFirst(list);
+    while(node!=NULL){
+      est = get(list,node);
+      cep = estab_get_cep(est);
+      face = estab_get_face(est);
+      face2[0] = face;
+      face2[1] = '\0';
+      num = estab_get_num(est);
+      qua = cidade_busca_quadra(cid,cep);
+      x2 = calcula_quadra_ponto_x(qua,face2,num);
+      y2 = calcula_quadra_ponto_y(qua,face2,num);
+      dist = distanceBetweenPoints(x,y,x2,y2);
+      if(dist<distMin){
+        distMin = dist;
+        estMin = est;
+      }
+    }
+  }
+  return estMin;
+}
