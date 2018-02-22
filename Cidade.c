@@ -1360,7 +1360,7 @@ void cidade_imprime_caminho_svg(Cidade cid, Pilha vertices, char *color, FILE *a
     x2 = grafo_get_vertice_x(v2);
     y2 = grafo_get_vertice_y(v2);
     fprintf(arq," <line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" ", x1, y1, x2, y2);
-    fprintf(arq,"stroke-width=\"2\" stroke=\"%s\"/>\n", color);
+    fprintf(arq,"stroke-width=\"4\" stroke=\"%s\"/>\n", color);
     v1 = v2;
   }
   if(getSizePilha(vertices)>0){
@@ -1368,7 +1368,7 @@ void cidade_imprime_caminho_svg(Cidade cid, Pilha vertices, char *color, FILE *a
     x1 = grafo_get_vertice_x(v1);
     y1 = grafo_get_vertice_y(v1);
     fprintf(arq," <line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" ", x1, y1, x2, y2);
-    fprintf(arq,"stroke-width=\"2\" stroke=\"%s\"/>\n", color);
+    fprintf(arq,"stroke-width=\"4\" stroke=\"%s\"/>\n", color);
   }
   fprintf(arq,"</svg>");
 }
@@ -1479,7 +1479,7 @@ Estab cidade_busca_estab_proximo(Cidade cid, double x, double y){
   cidade *c;
   Lista list;
   Hash h;
-  Posic node;
+  Posic node, reg;
   Estab est, estMin;
   Quadra qua;
   estMin = NULL;
@@ -1487,24 +1487,29 @@ Estab cidade_busca_estab_proximo(Cidade cid, double x, double y){
   h = getHash(c->dici, "codtestXest");
   size = hash_get_size(h);
   distMin = INFINITO;
+  qua = NULL;
   for(i=0;i<size;i++){
     list = hash_get_position(h,i);
     node = getFirst(list);
     while(node!=NULL){
-      est = get(list,node);
+      reg = get(list,node);
+      est = hash_get_reg(reg);
       cep = estab_get_cep(est);
       face = estab_get_face(est);
       face2[0] = face;
       face2[1] = '\0';
       num = estab_get_num(est);
       qua = cidade_busca_quadra(cid,cep);
-      x2 = calcula_quadra_ponto_x(qua,face2,num);
-      y2 = calcula_quadra_ponto_y(qua,face2,num);
-      dist = distanceBetweenPoints(x,y,x2,y2);
+      if(qua!=NULL){
+        x2 = calcula_quadra_ponto_x(qua,face2,num);
+        y2 = calcula_quadra_ponto_y(qua,face2,num);
+        dist = distanceBetweenPoints(x,y,x2,y2);
+      }
       if(dist<distMin){
         distMin = dist;
         estMin = est;
       }
+      node = getNext(list,node);
     }
   }
   return estMin;

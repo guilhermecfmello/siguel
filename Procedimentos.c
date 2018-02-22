@@ -405,11 +405,11 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
                 coberturaTorresTxt(c,NULL);
             }
         case '@':
-          fscanf(entQry,"%c%c ", &op, &op2);
+          fscanf(entQry,"%c%c", &op, &op2);
           if(op2=='?'){
             switch(op){
               case 'f':
-                fscanf(entQry,"%s %s ", sufixo, end);
+                fscanf(entQry," %s %s ", sufixo, end);
                 tor = cidade_busca_torre_pelo_celular(c,end);
                 if(tor!=NULL){
                   x = getTorreX(tor);
@@ -418,7 +418,7 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
                 }
               break;
               case 'm':
-                fscanf(entQry,"%s %s ", sufixo, end);
+                fscanf(entQry," %s %s ", sufixo, end);
                 pes = cidade_busca_pessoa_por_cpf(c,end);
                 r1 = pessoa_get_cep(pes);
                 qua = cidade_busca_quadra(c,r1);
@@ -451,11 +451,12 @@ Cidade processoQry(Cidade c, char *nomeBase, char *nomeQry, char *dirBSD){
             }
           }
           else if(op2=='y'){
-            fscanf(entQry," %s %lf %lf ", R1, &x, &y);
+            fscanf(entQry,"%c %s %lf %lf ",&op, R1, &x, &y);
             tuplas_set_regs(tupla,R1,x,y);
           }
           else if(op2=='p'){
-            fscanf(entQry," %s %s %s ", R1, end, R2);
+            fscanf(entQry,"%c %s %s %s ",&op, R1, end, R2);
+
             x = tuplas_get_x(tupla,R2);
             y = tuplas_get_y(tupla,R2);
             est = cidade_busca_estab_proximo(c,x,y);
